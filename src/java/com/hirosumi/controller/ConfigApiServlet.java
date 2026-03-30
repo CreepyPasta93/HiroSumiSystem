@@ -42,7 +42,7 @@ public class ConfigApiServlet extends HttpServlet {
         }
 
         // ==========================================
-        // 📤 2. SEND RULES TO PICO (The "Sender" logic - Existing)
+        // 📤 2. SEND RULES TO PICO (The "Sender" logic - Existing) Changes
         // ==========================================
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
