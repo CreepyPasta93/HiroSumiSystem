@@ -1,5 +1,7 @@
 <%@page import="com.hirosumi.model.Configuration"%>
 <%@page import="com.hirosumi.model.User"%>
+<%@page import="java.util.List"%>
+<%@page import="com.hirosumi.model.Notification"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
@@ -115,6 +117,43 @@
                 border: 2px solid var(--active-pink);
             }
 
+            .card-matcha {
+                background-color: #f0f4ef !important; /* Soft Matcha Green */
+                padding: 25px;
+                border-radius: 20px;
+                border: 1px solid #d8e2dc;
+                margin-bottom: 20px;
+                box-shadow: 2px 4px 12px rgba(0,0,0,0.05);
+                position: relative;
+                box-shadow: 4px 4px 0px rgba(74, 109, 74, 0.1) !important; /* Matcha shadow */
+                border: 2px solid #d8e2dc !important;
+            }
+
+            .card-matcha span {
+                color: #2d472d !important; /* Deep dark green for visibility */
+            }
+
+            .section-title {
+                font-family: 'Quicksand', sans-serif;
+                font-weight: 700;
+                color: #4a6d4a;
+                font-size: 1.1rem;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+                padding-bottom: 8px;
+                margin-bottom: 15px;
+                border-bottom: 1px dashed rgba(74, 109, 74, 0.3) !important;
+            }
+
+            /* The cute matcha leaf symbol */
+            .card-matcha::after {
+                content: '🍃';
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                opacity: 0.4;
+            }
+
+
             /* Admin Panel Specific Styles */
             .admin-input-grid {
                 display: grid;
@@ -184,6 +223,61 @@
                     opacity: 1;
                 }
             }
+
+            /* --- 🔔 NOTIFICATION POPUP 🔔 --- */
+            .notif-popup {
+                position: fixed; /* Use fixed so it follows the bell */
+                top: 75px;      /* Just below the header line */
+                right: 150px;   /* Adjusted to align under the new bell position */
+                width: 320px;
+                background: white;
+                border: 2px solid var(--active-pink);
+                border-radius: 15px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                display: none;
+                z-index: 2000;  /* Higher than everything else */
+                padding: 15px;
+            }
+
+            .notif-item {
+                padding: 10px;
+                border-bottom: 1px dashed #eee;
+                font-family: 'Quicksand', sans-serif;
+            }
+
+            .notif-item:last-child {
+                border-bottom: none;
+            }
+
+            .notif-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 8px;
+            }
+
+            .btn-approve {
+                background: #a3b18a; /* Matcha Green */
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 15px;
+                cursor: pointer;
+                font-family: 'Quicksand', sans-serif;
+                font-weight: bold;
+                transition: 0.3s;
+            }
+
+            .btn-deny {
+                background: #ffb7c5; /* Strawberry Pink */
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 15px;
+                cursor: pointer;
+                font-family: 'Quicksand', sans-serif;
+                font-weight: bold;
+                transition: 0.3s;
+            }
         </style>
     </head>
 
@@ -194,41 +288,52 @@
             <div class="main-content">
                 <jsp:include page="header.jsp"/>
 
+                <div class="notification-wrapper" 
+                     style="position: absolute; top: 15px; right: 250px; cursor: pointer; z-index: 1002;" 
+                     onclick="toggleNotifPopup()">
+
+                    <i class="fa-solid fa-bell" style="font-size: 1.6rem; color: var(--active-pink); filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));"></i>
+
+                    <span class="notif-badge" style="position: absolute; top: -5px; right: -5px; background: #ff4d4d; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; border: 2px solid white;">
+                        <%= (request.getAttribute("pendingCount") != null) ? request.getAttribute("pendingCount") : "0"%>
+                    </span>
+                </div>
+
                 <div class="threshold-layout">
                     <div class="logic-section">
                         <h1 style="font-family:'Comic Neue'; color:var(--text-dark); font-size: 2.8rem; margin: 0 0 5px 0; display: flex; align-items: center;">
                             <i class="fa-solid fa-wrench" style="color: #4CAF50; font-size: 2.2rem; margin-right: 15px;"></i> Tech Configuration
-                        </h1>                      
+                        </h1>                       
                         <p style="color:var(--text-dark); opacity:0.7; margin: 0 0 35px 5px;">Direct database control for shelter parameters 🍓</p>
 
-                        <div class="card-matcha" style="margin-bottom: 20px;">
+                        <div class="card-matcha">
                             <div class="section-title"><i class="fa-solid fa-fire"></i> Active Heater Logic (Hysteresis)</div>
                             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
                                 <div>
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Turns ON Below</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getHeaterActivation()%>°C</span>
+                                    <span style="font-size: 0.9rem; opacity: 0.8; color: #444;">Turns ON Below</span><br>
+                                    <span style="font-size: 1.8rem; font-weight: 800; color: #2d472d;"><%= sysConfig.getHeaterActivation()%>°C</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Turns OFF Above</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getHeaterCutoff()%>°C</span>
+                                    <span style="font-size: 0.9rem; opacity: 0.8; color: #444;">Turns OFF Above</span><br>
+                                    <span style="font-size: 1.8rem; font-weight: 800; color: #2d472d;"><%= sysConfig.getHeaterCutoff()%>°C</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card-matcha" style="margin-bottom: 20px;">
+                        <div class="card-matcha">
                             <div class="section-title"><i class="fa-solid fa-fan"></i> Active Fan & Ventilation Logic</div>
                             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
                                 <div>
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Heat Trigger</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getFanActivationThreshold()%>°C</span>
+                                    <span style="font-size: 0.8rem; opacity: 0.8; color: #444;">Heat Trigger</span><br>
+                                    <span style="font-size: 1.6rem; font-weight: 800; color: #2d472d;"><%= sysConfig.getFanActivationThreshold()%>°C</span>
                                 </div>
                                 <div style="text-align: center;">
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Humidity Trigger</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getHumidityThreshold()%>%</span>
+                                    <span style="font-size: 0.8rem; opacity: 0.8; color: #444;">Humidity Trigger</span><br>
+                                    <span style="font-size: 1.6rem; font-weight: 800; color: #2d472d;"><%= sysConfig.getHumidityThreshold()%>%</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Cut-Off Point</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getFanCutoffThreshold()%>°C</span>
+                                    <span style="font-size: 0.8rem; opacity: 0.8; color: #444;">Cut-Off Point</span><br>
+                                    <span style="font-size: 1.6rem; font-weight: 800; color: #2d472d;"><%= sysConfig.getFanCutoffThreshold()%>°C</span>
                                 </div>
                             </div>
                         </div>
@@ -237,18 +342,40 @@
                             <div class="section-title"><i class="fa-solid fa-moon"></i> Active Schedule Logic</div>
                             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
                                 <div>
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Night Mode Starts</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;"><%= sysConfig.getNightModeStart()%>:00</span>
+                                    <span style="font-size: 0.9rem; opacity: 0.8; color: #444;">Night Mode Starts</span><br>
+                                    <span style="font-size: 1.8rem; font-weight: 800; color: #2d472d;"><%= String.format("%02d:00", sysConfig.getNightModeStart())%>:00</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">Day Mode Resumes</span><br>
-                                    <span style="font-size: 1.8rem; font-weight: 800;">0<%= sysConfig.getNightModeEnd()%>:00</span>
+                                    <span style="font-size: 0.9rem; opacity: 0.8; color: #444;">Day Mode Resumes</span><br>
+                                    <span style="font-size: 1.8rem; font-weight: 800; color: #2d472d;"><%= String.format("%02d:00", sysConfig.getNightModeEnd())%>:00</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="control-section">
+                        <div class="card-matcha" style="margin-top: 20px; border: 2px dashed #6b8e23; background: #fdfdfd;">
+                            <div class="section-title" style="color: #2e4d2e;"><i class="fa-solid fa-lightbulb"></i> System Intelligence Guide</div>
+                            <div class="card-matcha" style="margin-top: 30px; border: 2px dashed #4a6d4a; background: #fff;">
+                                <div class="section-title" style="border-bottom:none; margin-bottom:10px;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Operational Logic Guide 🍵
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; font-size: 0.85rem; color: #555;">
+                                    <div>
+                                        <strong>🚩 Triggers vs. Cut-offs</strong><br>
+                                        The <b>Trigger</b> is the "Start" point (e.g., Fan starts at 30°C). The <b>Cut-off</b> is the "Stop" point. Always keep the Cut-off slightly lower than the Trigger to ensure the system knows when to quit!
+                                    </div>
+                                    <div>
+                                        <strong>🔄 The Hysteresis Gap</strong><br>
+                                        Think of this as a safety buffer. A 1-2°C gap prevents the hardware from "stuttering" (turning on and off every second), which keeps your motors healthy.
+                                    </div>
+                                    <div>
+                                        <strong>🤝 Fan Co-dependency</strong><br>
+                                        The Fan is smart! It only starts if <b>BOTH</b> the Heat and Humidity reach their trigger levels. This keeps the air fresh without over-drying the shelter.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> <div class="control-section">
                         <div class="card-strawberry">
                             <form action="TechThresholdServlet" method="POST">
                                 <h3 style="text-align:center; font-family:'Comic Neue'; color:var(--active-pink); margin-bottom:20px; font-size: 1.8rem;">
@@ -287,11 +414,11 @@
 
                                 <div class="admin-input-grid">
                                     <div class="admin-input-group">
-                                        <label>Night Mode Start (24h)</label>
+                                        <label>Night Mode Start</label>
                                         <input type="number" name="nightStart" value="<%= sysConfig.getNightModeStart()%>" min="0" max="23" required>
                                     </div>
                                     <div class="admin-input-group">
-                                        <label>Night Mode End (24h)</label>
+                                        <label>Night Mode End</label>
                                         <input type="number" name="nightEnd" value="<%= sysConfig.getNightModeEnd()%>" min="0" max="23" required>
                                     </div>
                                 </div>
@@ -304,29 +431,76 @@
                                 </button>
                             </form>
                         </div>
+                    </div> 
+                </div> 
+
+                <script>
+                    // Clean URL after success modal shows
+                    window.onload = function () {
+                        if (window.location.search.includes('status=updated')) {
+                            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                            window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+                        }
+                    };
+                    function toggleNotifPopup() {
+                        const popup = document.getElementById('notifPopup');
+                        if (popup.style.display === 'block') {
+                            popup.style.display = 'none';
+                        } else {
+                            popup.style.display = 'block';
+                        }
+                    }
+
+// Close popup if user clicks anywhere else
+                    window.onclick = function (event) {
+                        if (!event.target.matches('.fa-bell') && !event.target.closest('.notif-popup')) {
+                            document.getElementById('notifPopup').style.display = 'none';
+                        }
+                    }
+                </script>
+                <% if ("updated".equals(status)) { %>
+                <div id="successModal" class="modal" style="display:flex;">
+                    <div class="modal-content" style="border-top:10px solid var(--card-green); background: var(--bg-cream); padding: 30px; border-radius: 20px; text-align: center;">
+                        <div style="font-size:3rem; color: #4CAF50;"><i class="fa-solid fa-circle-check"></i></div>
+                        <h2 style="font-family:'Comic Neue'; color:var(--card-green);">Database Updated!</h2>
+                        <p>New logic thresholds have been deployed to the shelter.</p>
+                        <button onclick="document.getElementById('successModal').style.display = 'none'"
+                                class="btn-apply" style="width:100%; padding:15px; margin-top:10px; background:var(--card-green); border-radius: 30px; border: none; color: white; font-weight: bold; cursor: pointer;">Acknowledge</button>
                     </div>
                 </div>
+                <% }%>
             </div>
-            <script>
-                // Clean URL after success modal shows
-                window.onload = function () {
-                    if (window.location.search.includes('status=updated')) {
-                        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
-                    }
-                };
-            </script>
-            <% if ("updated".equals(status)) { %>
-            <div id="successModal" class="modal" style="display:flex;">
-                <div class="modal-content" style="border-top:10px solid var(--card-green); background: var(--bg-cream); padding: 30px; border-radius: 20px; text-align: center;">
-                    <div style="font-size:3rem; color: #4CAF50;"><i class="fa-solid fa-circle-check"></i></div>
-                    <h2 style="font-family:'Comic Neue'; color:var(--card-green);">Database Updated!</h2>
-                    <p>New logic thresholds have been deployed to the shelter.</p>
-                    <button onclick="document.getElementById('successModal').style.display = 'none'"
-                            class="btn-apply" style="width:100%; padding:15px; margin-top:10px; background:var(--card-green); border-radius: 30px; border: none; color: white; font-weight: bold; cursor: pointer;">Acknowledge</button>
+            <div id="notifPopup" class="notif-popup">
+                <h4 style="margin: 0 0 10px 0; color: var(--active-pink); font-family: 'Comic Neue'; border-bottom: 2px solid var(--bg-pink); padding-bottom: 5px;">
+                    Volunteer Requests 🐾
+                </h4>
+
+                <%
+                    List<Notification> notifs = (List<Notification>) request.getAttribute("notifications");
+                    if (notifs != null && !notifs.isEmpty()) {
+                        for (Notification n : notifs) {
+                %>
+                <div class="notif-item">
+                    <p style="margin: 0; font-size: 0.9rem;">
+                        <b>User ID: <%= n.getUserId()%></b> wants to change 
+                        <b><%= n.getSensorName()%></b> to <b><%= n.getNewThreshold()%></b>
+                    </p>
+                    <small style="color: #888;">Reason: <%= n.getReason()%></small>
+                    <div class="notif-actions">
+                        <a href="HandleNotificationServlet?action=approve&id=<%= n.getRequestId()%>" class="btn-approve" style="text-decoration:none;">Approve</a>
+                        <a href="HandleNotificationServlet?action=deny&id=<%= n.getRequestId()%>" class="btn-deny" style="text-decoration:none;">Deny</a>
+                    </div>
                 </div>
+                <%
+                    }
+                } else {
+                %>
+                <div style="text-align:center; padding:10px; color:#999;">
+                    No new requests! ✨
+                </div>
+                <% }%>
             </div>
-            <% }%>
-        </div>
-    </body>
+        </div> </body>
 </html>
+
+</body>

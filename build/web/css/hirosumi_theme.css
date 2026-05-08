@@ -1,0 +1,175 @@
+/* Web Pages/css/hirosumi_theme.css */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+}
+
+body {
+    background-color: #F8F6F0; /* Light cream background */
+    color: #4A4A4A;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Sidebar Styling --- */
+.sidebar {
+    width: 260px;
+    background-color: #F8F6F0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 2px dashed #E5E0D8;
+}
+
+.brand {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.brand h2 {
+    color: #F6A7B1; /* Strawberry */
+    font-weight: 800;
+}
+
+.nav-menu {
+    list-style: none;
+    flex-grow: 1;
+}
+
+.nav-item {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.nav-item.active {
+    background-color: #FCE8EB; /* Light Pink */
+    color: #E27B8A;
+}
+
+.nav-item:hover:not(.active) {
+    background-color: #F0EBE1;
+}
+
+.user-profile {
+    background-color: #FFFFFF;
+    padding: 15px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+}
+
+/* --- Main Content Styling --- */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.greeting h1 {
+    font-size: 24px;
+    color: #4A4A4A;
+}
+
+.greeting span {
+    color: #F6A7B1; /* Strawberry */
+}
+
+/* --- Dashboard Grid --- */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Top Row: Chart (Flex 2) + Atmosphere (Flex 1) */
+.top-row {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    padding: 25px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+}
+
+.chart-card {
+    flex: 2;
+    border: 2px solid #FCE8EB;
+}
+
+.atmosphere-card {
+    flex: 1;
+    background-color: #5E7A5A; /* Matcha Green */
+    color: white;
+}
+
+.atmosphere-card h1 {
+    font-size: 48px;
+    margin: 15px 0;
+}
+
+/* Bottom Row: 4 Equal Cards */
+/* Update this in your CSS file */
+.bottom-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* ADD THIS NEW RULE */
+.bottom-row .card {
+    min-height: 220px; /* This forces the square/tall shape! */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* This pushes the top text up and bottom text down */
+    position: relative; /* Needed so we can put images inside them later */
+    overflow: hidden;
+}
+
+.actuator-card {
+    background-color: #FCE8EB;
+} /* Pink */
+.uptime-card {
+    background-color: #5E7A5A;
+    color: white;
+} /* Matcha */
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-green {
+    background-color: #7DA077;
+    color: white;
+}
+.badge-auto {
+    background-color: #5E7A5A;
+    color: white;
+}

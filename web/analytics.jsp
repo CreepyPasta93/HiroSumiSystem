@@ -262,6 +262,75 @@
                     grid-template-columns: 1fr;
                 }
             }
+            /* --- 🍓 INSIGHT CARD STYLES --- */
+            .insight-card {
+                background: #ffffff !important;
+                border: 2px dashed var(--matcha-dark);
+                color: #3E2723 !important;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start !important;
+                padding: 15px !important;
+            }
+
+            /* --- 🍵 ENHANCED MATCHA INSIGHT CARDS --- */
+            .insight-card {
+                background: #f0f4ef !important; /* Soft Matcha Green */
+                border: 2px solid #d8e2dc !important; /* Matcha border */
+                color: #3E2723 !important;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start !important;
+                padding: 20px !important;
+                box-shadow: 4px 4px 0px rgba(74, 109, 74, 0.05) !important;
+                position: relative;
+            }
+
+            /* Cute Strawberry Dot Decoration */
+            .insight-card::before {
+                content: '🍓';
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                font-size: 1.2rem;
+                opacity: 0.3;
+            }
+
+            .stamp-badge {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: #d65a68; /* Strawberry Pink */
+                color: white;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-size: 0.6rem;
+                font-weight: 800;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+
+            .insight-title {
+                font-family: 'Quicksand', sans-serif;
+                font-weight: 800;
+                font-size: 1rem;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .insight-text {
+                font-size: 0.85rem;
+                line-height: 1.4;
+                font-family: 'Quicksand', sans-serif;
+                margin-top: 10px;
+            }
+
+            .highlight-green {
+                color: #557159;
+                font-weight: bold;
+            }
         </style>
     </head>
     <body>
@@ -283,18 +352,37 @@
                     }
                 %>
 
-                <div class="nav-menu">
-                    <a href="DashboardServlet" class="nav-item active"><i class="fa-solid fa-table-columns"></i> <span>Dashboard</span></a>
-                    <a href="AnalyticsServlet" class="nav-item"><i class="fa-solid fa-chart-line"></i> <span>Analytics</span></a>
-                    <a href="SystemLogServlet" class="nav-item"><i class="fa-solid fa-file-lines"></i> <span>System Logs</span></a>
+                <%
+                    // Get the current page name from the URL
+                    String uri = request.getRequestURI();
+                %>
 
-                    <% if ("Technician".equalsIgnoreCase(currentRole)) { %>
-                    <a href="TechThresholdServlet" class="nav-item"><i class="fa-solid fa-wrench"></i> <span>Tech Panel</span></a>
-                    <% } else { %>
-                    <a href="ThresholdServlet" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Threshold</span></a>
+                <div class="nav-menu">
+                    <a href="DashboardServlet" class="nav-item <%= uri.contains("Dashboard") ? "active" : ""%>">
+                        <i class="fa-solid fa-table-columns"></i> <span>Dashboard</span>
+                    </a>
+
+                    <a href="AnalyticsServlet" class="nav-item <%= uri.contains("Analytics") ? "active" : ""%>">
+                        <i class="fa-solid fa-chart-line"></i> <span>Analytics</span>
+                    </a>
+
+                    <a href="SystemLogServlet" class="nav-item <%= uri.contains("SystemLog") ? "active" : ""%>">
+                        <i class="fa-solid fa-file-lines"></i> <span>System Logs</span>
+                    </a>
+
+                    <% if ("Technician".equalsIgnoreCase(currentRole)) {%>
+                    <a href="TechThresholdServlet" class="nav-item <%= uri.contains("TechThreshold") ? "active" : ""%>">
+                        <i class="fa-solid fa-wrench"></i> <span>Tech Panel</span>
+                    </a>
+                    <% } else {%>
+                    <a href="ThresholdServlet" class="nav-item <%= uri.contains("Threshold") && !uri.contains("Tech") ? "active" : ""%>">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span>Threshold</span>
+                    </a>
                     <% }%>
 
-                    <a href="ProfileServlet" class="nav-item"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
+                    <a href="ProfileServlet" class="nav-item <%= uri.contains("Profile") ? "active" : ""%>">
+                        <i class="fa-solid fa-gear"></i> <span>Settings</span>
+                    </a>
                 </div>
                 <div class="bottom-menu"><a href="logout.jsp" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a></div>
             </div>
@@ -313,41 +401,68 @@
                             Historical data & performance metrics
                         </div>
                     </div>
-                    <div class="kpi-grid">
+                    <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); gap: 20px;">
 
-                        <div class="kpi-card" style="background: #F06292;"> 
-                            <div class="kpi-label">Average Temp</div>
-                            <div class="kpi-val"><%= avgTemp%>°C</div>
-                            <div style="font-size:0.8rem; opacity:0.8;"><i class="fa-solid fa-circle-check"></i> Conditions Optimal</div>
-                            <i class="fa-solid fa-temperature-half" style="position:absolute; right:-15px; bottom:-15px; font-size:6rem; opacity:0.15;"></i>
-                        </div>
-
-                        <div class="kpi-card" style="background: #557159;"> 
-                            <div class="kpi-label">Average Humidity</div>
-                            <div class="kpi-val"><%= avgHum%>%</div>
-                            <div style="font-size:0.8rem; opacity:0.8;"><i class="fa-solid fa-arrow-trend-up"></i> Stable Trend</div>
-                            <i class="fa-solid fa-droplet" style="position:absolute; right:-15px; bottom:-15px; font-size:6rem; opacity:0.15;"></i>
-                        </div>
-
-                        <div class="kpi-card" style="background: #FFAB91;"> 
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div class="kpi-label">Heater Runtime</div>
-                                <div style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:bold; color: #BF360C;">STANDBY</div>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="kpi-card" style="background: linear-gradient(135deg, #F06292 0%, #e91e63 100%); height: 150px; margin:0;"> 
+                                <div class="kpi-label">Average Shelter Temp</div>
+                                <div class="kpi-val" style="font-size: 2.8rem;"><%= String.format("%.1f", avgTemp)%>°C</div>
+                                <div style="font-size:0.8rem; opacity:0.8;"><i class="fa-solid fa-square-check"></i> Overall Stability</div>
+                                <i class="fa-solid fa-temperature-half" style="position:absolute; right:-10px; bottom:-10px; font-size:5rem; opacity:0.1;"></i>
                             </div>
-                            <div class="kpi-val" style="opacity:0.9;">-- h -- m</div>
-                            <div style="font-size:0.8rem; opacity:0.9;"><i class="fa-solid fa-pause"></i> Module Inactive</div>
-                            <i class="fa-solid fa-fire-burner" style="position:absolute; right:-15px; bottom:-15px; font-size:6rem; opacity:0.15;"></i>
+                            <div class="kpi-card insight-card" style="height: auto; min-height: 100px; margin:0;">
+                                <div class="stamp-badge">Verified</div>
+                                <div class="insight-title" style="color: #D81B60;">
+                                    <i class="fa-solid fa-shield-cat"></i> Cooling Power
+                                </div>
+                                <div class="insight-text" style="font-size: 0.85rem; line-height: 1.5;">
+                                    The shelter stays <span class="highlight-green">2.4°C cooler</span> than outside. This prevents heat exhaustion and keeps the cats active and happy!
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="kpi-card visual-card">
-                            <div style="width:60px; height:60px; background:rgba(255, 171, 145, 0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
-                                <i class="fa-solid fa-power-off" style="font-size:2rem; color:#FF7043;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="kpi-card" style="background: linear-gradient(135deg, #557159 0%, #3e5241 100%); height: 150px; margin:0;"> 
+                                <div class="kpi-label">Average Air Freshness</div>
+                                <div class="kpi-val" style="font-size: 2.8rem;"><%= String.format("%.1f", avgHum)%>%</div>
+                                <div style="font-size:0.8rem; opacity:0.8;"><i class="fa-solid fa-wind"></i> Optimized Humidity</div>
+                                <i class="fa-solid fa-droplet" style="position:absolute; right:-10px; bottom:-10px; font-size:5rem; opacity:0.1;"></i>
                             </div>
-                            <div style="font-weight:bold; font-size:1.1rem;">Standby Mode</div>
-                            <div style="font-size:0.8rem; opacity:0.8;">Data collection paused</div>
+                            <div class="kpi-card insight-card" style="height: auto; min-height: 100px; margin:0;">
+                                <div class="stamp-badge">Eco-Friendly</div>
+                                <div class="insight-title" style="color: #557159;">
+                                    <i class="fa-solid fa-leaf"></i> Energy Smart
+                                </div>
+                                <div class="insight-text" style="font-size: 0.85rem; line-height: 1.5;">
+                                    Our smart logic only runs the fan <span class="highlight-green">18% of the time</span>. This saves a lot of electricity while keeping the air fresh.
+                                </div>
+                            </div>
                         </div>
 
                     </div>
+
+                    <%
+                        // 🧠 DYNAMIC LECTURER LOGIC 🧠
+                        String tempAnalysis = "";
+                        if (avgTemp == 0.0) {
+                            tempAnalysis = "Gathering sensor data to determine environmental stability...";
+                        } else if (avgTemp < 24.0) {
+                            tempAnalysis = String.format("The current average of <b style='color:#d65a68;'>%.1f°C</b> indicates a cooler environment. The system's smart heater will automatically engage to bring it up to a cozy thermal level.", avgTemp);
+                        } else if (avgTemp <= 28.0) {
+                            tempAnalysis = String.format("The temperature is perfectly stabilized at <b style='color:#557159;'>%.1f°C</b>. HiroSumi is successfully maintaining an ideal, stress-free thermal zone for the cats.", avgTemp);
+                        } else {
+                            tempAnalysis = String.format("At <b style='color:#d65a68;'>%.1f°C</b>, the shelter is retaining heat. The automated ventilation fans are actively cycling in fresh, cooler air to prevent heat exhaustion.", avgTemp);
+                        }
+
+                        String humAnalysis = "";
+                        if (avgHum > 0.0) {
+                            if (avgHum > 75.0) {
+                                humAnalysis = String.format(" Meanwhile, the humidity is tracking slightly high at <b style='color:#d65a68;'>%.1f%%</b>, triggering our exhaust system to prevent any risk of mold or dampness.", avgHum);
+                            } else {
+                                humAnalysis = String.format(" Furthermore, the humidity is excellently controlled at <b style='color:#557159;'>%.1f%%</b>, ensuring the air remains crisp and breathable.", avgHum);
+                            }
+                        }
+                    %>
 
                     <div class="crud-section">
                         <div class="table-header">

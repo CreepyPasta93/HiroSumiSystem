@@ -200,6 +200,136 @@
                     margin-bottom: 20px;
                 }
             }
+
+            /* Custom Legend Styles */
+            .chart-legend {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                margin-top: 10px;
+                font-family: 'Quicksand', sans-serif;
+                font-weight: bold;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.85rem;
+            }
+            .dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+            }
+
+            /* --- 🌿 ATMOSPHERE AESTHETIC UPGRADES --- */
+            .atmosphere-value-container {
+                display: flex;
+                align-items: baseline;
+                gap: 5px;
+                margin: 10px 0;
+            }
+
+            .main-temp {
+                font-size: 4rem;
+                font-weight: 800;
+                font-family: 'Quicksand', sans-serif;
+                letter-spacing: -2px;
+                text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            }
+
+            .temp-unit {
+                font-size: 1.5rem;
+                font-weight: 700;
+                opacity: 0.8;
+            }
+
+            .metric-pill {
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(4px);
+                padding: 6px 15px;
+                border-radius: 50px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: transform 0.3s ease;
+            }
+
+            .metric-pill:hover {
+                transform: scale(1.05);
+                background: rgba(255, 255, 255, 0.25);
+            }
+            /* --- ⏱️ UPTIME SYSTEM EFFECTS --- */
+            .uptime-monitor {
+                text-align: center;
+                padding: 10px;
+            }
+
+            .uptime-clock {
+                font-family: 'JetBrains Mono', 'Courier New', monospace;
+                font-size: 2.2rem;
+                font-weight: 800;
+                color: #A5D6A7;
+                text-shadow: 0 0 10px rgba(165, 214, 167, 0.4);
+                letter-spacing: 2px;
+            }
+
+            /* Moving heartbeat line */
+            .heartbeat-line {
+                width: 80%;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, #A5D6A7, transparent);
+                margin: 15px auto;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .heartbeat-line::after {
+                content: '';
+                position: absolute;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, #fff, transparent);
+                animation: sweep 2s infinite linear;
+            }
+
+            @keyframes sweep {
+                0% {
+                    left: -100%;
+                }
+                100% {
+                    left: 100%;
+                }
+            }
+
+            .pulse-dot {
+                height: 8px;
+                width: 8px;
+                background-color: #81C784;
+                border-radius: 50%;
+                display: inline-block;
+                box-shadow: 0 0 8px #81C784;
+                animation: pulse-animation 1.5s infinite;
+            }
+
+            @keyframes pulse-animation {
+                0% {
+                    transform: scale(0.95);
+                    box-shadow: 0 0 0 0 rgba(129, 199, 132, 0.7);
+                }
+                70% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 10px rgba(129, 199, 132, 0);
+                }
+                100% {
+                    transform: scale(0.95);
+                    box-shadow: 0 0 0 0 rgba(129, 199, 132, 0);
+                }
+            }
         </style>
     </head>
     <body>
@@ -282,40 +412,46 @@
                             <input type="hidden" id="endDate">
                         </div>
 
-                        <div class="dash-card hero-live-card" style="background: #4E6F52; color: #F1F8E9; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="dash-card hero-live-card" style="background: linear-gradient(145deg, #4E6F52, #3b543e); color: #F1F8E9; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; border: none; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; margin-bottom: 15px;">
-                                <div style="font-family: 'Georgia', serif; font-size: 1.1rem; letter-spacing: 1px; font-style: italic;">
-                                    <i class="fa-solid fa-seedling" style="color:#A5D6A7;"></i> Current Atmosphere
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 10px;">
+                                <div style="font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-cloud-sun-ray" style="color:#A5D6A7; margin-right: 8px;"></i> LIVE ATMOSPHERE
                                 </div>
                                 <i class="fa-solid fa-bell" id="bellIcon" onclick="triggerTelegramReport()" 
-                                   style="opacity: 0.9; cursor: pointer; transition: transform 0.2s;" 
+                                   style="opacity: 0.8; cursor: pointer; font-size: 1.2rem;" 
                                    title="Send Status to Telegram"></i>
                             </div>
 
-                            <div style="display:flex; align-items: center; gap: 20px;">
-                                <div style="font-size: 3.5rem; font-weight: 700; font-family: 'Helvetica', sans-serif;">
-                                    ${latest.temperature}°
+                            <div style="display:flex; flex-direction: column; gap: 15px;">
+                                <div class="atmosphere-value-container">
+                                    <span class="main-temp">${latest.temperature}</span>
+                                    <span class="temp-unit">°C</span>
                                 </div>
-                                <div style="display: flex; flex-direction: column; justify-content: center; gap: 8px;">
-                                    <div style="background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">
-                                        💧 <%= (d != null) ? String.format("%.2f", d.getHumidity()) : "0.00"%>% Hum
+
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <div class="metric-pill">
+                                        <i class="fa-solid fa-droplet" style="color: #90CAF9;"></i> 
+                                        <%= (d != null) ? String.format("%.1f", d.getHumidity()) : "0.0"%>% <span style="opacity: 0.6; font-size: 0.7rem;">HUM</span>
                                     </div>
-                                    <div style="background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">
-                                        ⏲ <%= (d != null) ? String.format("%.2f", d.getPressure()) : "0.00"%> kPa
+                                    <div class="metric-pill">
+                                        <i class="fa-solid fa-gauge-high" style="color: #FFF59D;"></i> 
+                                        <%= (d != null) ? String.format("%.1f", d.getPressure()) : "0.0"%> <span style="opacity: 0.6; font-size: 0.7rem;">KPA</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 15px; background: #F1F8E9; color: #2E4E32; padding: 15px; border-radius: 12px; border-left: 5px solid #A5D6A7; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 2;">
-                                <div style="font-family: 'Georgia', serif; font-size: 1.0rem; font-weight: bold; margin-bottom: 5px; color: #1B5E20; text-transform: uppercase; letter-spacing: 1px;">
+                            <div style="margin-top: 20px; background: rgba(241, 248, 233, 0.95); color: #2E4E32; padding: 18px; border-radius: 18px; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <div style="font-family: 'Quicksand', sans-serif; font-size: 0.9rem; font-weight: 800; margin-bottom: 6px; color: #1B5E20; display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #4CAF50; animation: pulse 2s infinite;"></div>
                                     <i class="fa-solid <%= comfortIcon%>"></i> <%= comfortTitle%>
                                 </div>
-                                <div style="font-size: 0.9rem; line-height: 1.4; font-family: 'Georgia', serif; font-style: italic;">
+                                <div style="font-size: 0.85rem; line-height: 1.5; font-weight: 500; opacity: 0.9;">
                                     "<%= comfortDesc%>"
                                 </div>
                             </div>
-                            <i class="fa-solid fa-leaf" style="position: absolute; bottom: -20px; right: -20px; font-size: 8rem; color: rgba(255,255,255,0.05); transform: rotate(-20deg); pointer-events: none;"></i>
+
+                            <i class="fa-solid fa-cat" style="position: absolute; top: 40px; right: -20px; font-size: 10rem; color: rgba(255,255,255,0.03); transform: rotate(15deg); pointer-events: none;"></i>
                         </div>
                     </div>
 
@@ -382,18 +518,31 @@
                             <i class="fa-solid fa-cat" style="position:absolute; bottom:30px; left:-10px; font-size:6rem; color:rgba(216, 27, 96, 0.03); transform:rotate(15deg);"></i>
                         </div>
 
-                        <div class="dash-card bg-green" style="background-color:#4E6F52; display:flex; flex-direction:column; position:relative; overflow:hidden;"> 
-                            <div class="card-title" style="color:white; z-index:2;">System Uptime</div>
-                            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2;">
-                                <div style="background:rgba(0,0,0,0.2); padding:5px 15px; border-radius:20px; font-family:monospace; font-size:1.5rem; font-weight:bold; letter-spacing:2px; color:#A5D6A7; margin-bottom:10px; border:1px solid rgba(255,255,255,0.1);">
-                                    <span id="uptime-h">00</span>:<span id="uptime-m">00</span>:<span id="uptime-s">00</span>
-                                </div>
-                                <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                                    <div class="pulse-dot"></div>
-                                    <span style="font-size:0.7rem; font-weight:bold; color: rgba(255,255,255,0.8);">SINCE BOOT</span>
+                        <div class="dash-card bg-green" style="background: linear-gradient(135deg, #4E6F52 0%, #3b543e 100%); display:flex; flex-direction:column; position:relative; overflow:hidden; border:none;"> 
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; z-index:2; margin-bottom: 5px;">
+                                <div class="card-title" style="color:rgba(255,255,255,0.9); font-weight:700; font-family:'Quicksand';">System Uptime</div>
+                                <div style="font-size: 0.65rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px; color: #A5D6A7; font-weight: bold; border: 1px solid rgba(165, 214, 167, 0.3);">
+                                    HEALTHY 100%
                                 </div>
                             </div>
-                            <i class="fa-regular fa-clock" style="position:absolute; top:-10px; right:-10px; font-size:5rem; color:rgba(255,255,255,0.05); transform:rotate(20deg);"></i>
+
+                            <div class="uptime-monitor" style="z-index:2; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                                <div class="uptime-clock">
+                                    <span id="uptime-h">00</span>:<span id="uptime-m">00</span>:<span id="uptime-s">00</span>
+                                </div>
+
+                                <div class="heartbeat-line"></div>
+
+                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                    <div class="pulse-dot"></div>
+                                    <span style="font-size:0.75rem; font-weight:bold; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase;">
+                                        Operational Since Boot
+                                    </span>
+                                </div>
+                            </div>
+
+                            <i class="fa-solid fa-microchip" style="position:absolute; bottom:-15px; right:-15px; font-size:6rem; color:rgba(255,255,255,0.03); transform:rotate(-15deg); pointer-events: none;"></i>
                         </div>
 
                         <div class="dash-card bg-cream" style="border-color:#557159; position:relative; overflow:hidden;">
@@ -506,23 +655,79 @@
             document.getElementById('endDate').value = toLocalISOString(now);
             document.getElementById('startDate').value = toLocalISOString(yesterday);
 
+            // --- 4. CHART CONFIGURATION (Strawberry Matcha Edition) ---
             const myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
-                        {label: 'Temp (°C)', data: [], borderColor: '#4E6F52', backgroundColor: 'rgba(78, 111, 82, 0.1)', fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#fff', yAxisID: 'y'},
-                        {label: 'Hum (%)', data: [], borderColor: '#D81B60', backgroundColor: 'transparent', borderWidth: 2, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#fff', yAxisID: 'y'},
-                        {label: 'Pressure (kPa)', data: [], borderColor: '#FBC02D', backgroundColor: 'transparent', borderWidth: 2, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#fff', yAxisID: 'y1', hidden: false}
+                        {
+                            label: 'Temperature (°C)',
+                            data: [],
+                            borderColor: '#557159', // Matcha Green
+                            backgroundColor: 'rgba(85, 113, 89, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 4,
+                            pointRadius: 0, // Cleaner look without dots
+                            pointHitRadius: 10,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Humidity (%)',
+                            data: [],
+                            borderColor: '#D65A68', // Strawberry Pink
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            borderDash: [5, 5], // Dashed line for contrast
+                            tension: 0.4,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Pressure (kPa)',
+                            data: [],
+                            borderColor: '#EBCB8B', // Creamy Gold
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {legend: {display: false}},
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true, // Show the legend for the lecturer!
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                font: {family: 'Quicksand', size: 12, weight: 'bold'},
+                                color: '#3E2723'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 250, 245, 0.9)',
+                            titleColor: '#3E2723',
+                            bodyColor: '#3E2723',
+                            borderColor: '#F8BBD0',
+                            borderWidth: 1,
+                            displayColors: true
+                        }
+                    },
                     scales: {
-                        x: {grid: {display: false}, ticks: {maxTicksLimit: 8, color: '#888'}},
-                        y: {grid: {color: 'rgba(0,0,0,0.05)'}, ticks: {color: '#888'}, position: 'left', title: {display: true, text: 'Temp / Hum'}},
-                        y1: {grid: {display: false}, position: 'right', display: 'auto', title: {display: true, text: 'Pressure (kPa)'}, suggestedMin: 98, suggestedMax: 102}
+                        x: {grid: {display: false}, ticks: {color: '#8d6e63'}},
+                        y: {
+                            grid: {color: 'rgba(85, 113, 89, 0.05)'},
+                            ticks: {color: '#8d6e63'},
+                            title: {display: true, text: 'Environment Metrics', color: '#557159'}
+                        },
+                        y1: {
+                            display: false // Keeping the UI clean, data is still there
+                        }
                     }
                 }
             });

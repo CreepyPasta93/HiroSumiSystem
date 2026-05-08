@@ -1,10 +1,17 @@
 package com.hirosumi.controller;
 
 import com.hirosumi.dao.ConfigurationDAO;
+import com.hirosumi.dao.DBConnection;
 import com.hirosumi.dao.SystemLogDAO;
 import com.hirosumi.model.Configuration;
+import com.hirosumi.model.Notification;
 import com.hirosumi.model.User;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList; // Added
+import java.util.List;      // Added
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,24 +25,50 @@ public class TechThresholdServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            
+
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("currentUser");
-        
-        // Basic Role Check (Ensure they are logged in. You can add role specific checks here!)
+
         if (currentUser == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
+        // --- 🔔 NEW: NOTIFICATION FETCHING LOGIC 🔔 ---
+        List<Notification> notifList = new ArrayList<>();
+        int pendingCount = 0;
+
+        try (Connection conn = DBConnection.getConnection()) {
+            String sql = "SELECT * FROM threshold_notifications WHERE status = 'PENDING'";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Notification n = new Notification();
+                n.setRequestId(rs.getInt("requestId"));
+                n.setSensorName(rs.getString("sensor_name"));
+                n.setNewThreshold(rs.getFloat("new_threshold"));
+                n.setReason(rs.getString("reason"));
+                n.setUserId(rs.getInt("userId"));
+                notifList.add(n);
+                pendingCount++;
+            }
+            // Pass the list and count to the tech_threshold.jsp
+            request.setAttribute("notifications", notifList);
+            request.setAttribute("pendingCount", pendingCount);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // ----------------------------------------------
+
         ConfigurationDAO dao = new ConfigurationDAO();
         Configuration config = dao.getCurrentConfig();
-        
-        // Fallback defaults if DB is empty
+
         if (config == null) {
-            config = new Configuration(0, 24.0, 27.0, 10, 32.0, 30.0, 28.0, 75.0, 19, 7); 
+            config = new Configuration(0, 24.0, 27.0, 10, 32.0, 30.0, 28.0, 75.0, 19, 7);
         }
-        
+
         request.setAttribute("config", config);
         request.getRequestDispatcher("tech_threshold.jsp").forward(request, response);
     }
@@ -43,9 +76,8 @@ public class TechThresholdServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            
+
         try {
-            // 1. Grab all the new inputs from the Technician's form
             double hAct = Double.parseDouble(request.getParameter("heaterAct"));
             double hCut = Double.parseDouble(request.getParameter("heaterCut"));
             double fAct = Double.parseDouble(request.getParameter("fanAct"));
@@ -53,25 +85,26 @@ public class TechThresholdServlet extends HttpServlet {
             double humThresh = Double.parseDouble(request.getParameter("humThresh"));
             int nStart = Integer.parseInt(request.getParameter("nightStart"));
             int nEnd = Integer.parseInt(request.getParameter("nightEnd"));
-            
-            // Keeping these two from your original setup, or providing defaults if hidden in UI
-            int lDur = Integer.parseInt(request.getParameter("lightDur"));
-            double sAlert = Double.parseDouble(request.getParameter("safetyAlert"));
 
-            // 2. Update Database directly (CRUD - Update)
+            // Get hidden values or provide defaults
+            String lDurStr = request.getParameter("lightDur");
+            int lDur = (lDurStr != null) ? Integer.parseInt(lDurStr) : 10;
+            
+            String sAlertStr = request.getParameter("safetyAlert");
+            double sAlert = (sAlertStr != null) ? Double.parseDouble(sAlertStr) : 32.0;
+
             ConfigurationDAO dao = new ConfigurationDAO();
             boolean success = dao.updateConfig(hAct, hCut, lDur, sAlert, fAct, fCut, humThresh, nStart, nEnd);
 
-            // 3. Log the system change
             SystemLogDAO logDao = new SystemLogDAO();
-            if(success) {
+            if (success) {
                 logDao.insertLog("Admin Panel", "SYSTEM", "Thresholds forcefully updated by Technician", "Success");
                 response.sendRedirect("TechThresholdServlet?status=updated");
             } else {
                 logDao.insertLog("Admin Panel", "ERROR", "Failed to update thresholds", "Failed");
                 response.sendRedirect("TechThresholdServlet?status=error");
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("TechThresholdServlet?status=error");

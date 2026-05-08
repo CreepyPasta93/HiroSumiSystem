@@ -19,8 +19,8 @@ public class AnalyticsServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // A. Sync ThingSpeak
-        ThingSpeakFetcher fetcher = new ThingSpeakFetcher();
-        fetcher.fetchAndSaveData();
+        //ThingSpeakFetcher fetcher = new ThingSpeakFetcher();
+        //fetcher.fetchAndSaveData();
 
         // B. Fetch KPIs
         AnalyticsDAO dao = new AnalyticsDAO();
