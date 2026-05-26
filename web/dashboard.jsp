@@ -463,37 +463,46 @@
                                 <%
                                     long diffSeconds = (new java.util.Date().getTime() - d.getTimestamp().getTime()) / 1000;
                                     boolean isOnline = diffSeconds < 120;
-                                %>
+
+                                    // --- NEW: ESTIMATE ACTUATOR STATES FOR UI ---
+                                    boolean isFanOn = (d.getFanStatus() == 1);
+                                    boolean isHeaterOn = (currentTemp <= 28.0); // Faked for UI based on your current temp
+                                    boolean isLightOn = (motion == 1); // If motion is active, light is likely on
+%>
                                 <div style="background:<%= isOnline ? "#4CAF50" : "rgba(255,255,255,0.4)"%>; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:bold; color:<%= isOnline ? "white" : "#880E4F"%>;">
                                     <%= isOnline ? "ONLINE" : "OFFLINE"%>
                                 </div>
                             </div>
 
                             <div style="display:flex; gap:20px; align-items:center; z-index:2;">
-                                <div style="text-align:center; opacity: 0.5;">
-                                    <div style="width:50px; height:50px; background:rgba(255,255,255,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
-                                        <i class="fa-solid fa-fire" style="font-size:1.5rem; color:#AD1457;"></i>
+
+                                <!-- HEATER ICON -->
+                                <div style="text-align:center; <%= isHeaterOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
+                                    <div style="width:50px; height:50px; background:<%= isHeaterOn ? "#F8BBD0" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isHeaterOn ? "#AD1457" : "transparent"%>;">
+                                        <i class="fa-solid fa-fire <%= isHeaterOn ? "fa-fade" : ""%>" style="font-size:1.5rem; color:#AD1457;"></i>
                                     </div>
                                     <div style="font-size:0.7rem; font-weight:bold; color:#880E4F;">Heater</div>
                                 </div>
 
-                                <div style="text-align:center;">
-                                    <div style="width:60px; height:60px; background:<%= (d.getFanStatus() == 1) ? "#F8BBD0" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= (d.getFanStatus() == 1) ? "#AD1457" : "transparent"%>;">
-                                        <i class="fa-solid fa-fan <%= (d.getFanStatus() == 1) ? "fa-spin" : ""%>" style="font-size:2rem; color:#AD1457;"></i>
+                                <!-- FAN ICON -->
+                                <div style="text-align:center; <%= isFanOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
+                                    <div style="width:60px; height:60px; background:<%= isFanOn ? "#F8BBD0" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isFanOn ? "#AD1457" : "transparent"%>;">
+                                        <i class="fa-solid fa-fan <%= isFanOn ? "fa-spin" : ""%>" style="font-size:2rem; color:#AD1457;"></i>
                                     </div>
                                     <div style="font-size:0.8rem; font-weight:bold; color:#880E4F;">Ventilation</div>
                                 </div>
 
-                                <div style="text-align:center; opacity: 0.5;">
-                                    <div style="width:50px; height:50px; background:rgba(255,255,255,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
-                                        <i class="fa-regular fa-lightbulb" style="font-size:1.5rem; color:#AD1457;"></i>
+                                <!-- LIGHTS ICON -->
+                                <div style="text-align:center; <%= isLightOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
+                                    <div style="width:50px; height:50px; background:<%= isLightOn ? "#FFF59D" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isLightOn ? "#FBC02D" : "transparent"%>;">
+                                        <i class="fa-solid fa-lightbulb <%= isLightOn ? "fa-beat-fade" : ""%>" style="font-size:1.5rem; color:#F57F17;"></i>
                                     </div>
                                     <div style="font-size:0.7rem; font-weight:bold; color:#880E4F;">Lights</div>
                                 </div>
                             </div>
 
                             <div style="margin-top:10px; font-size:0.8rem; color:#AD1457; font-weight:bold; z-index:2;">
-                                Status: <%= (d.getFanStatus() == 1) ? "Running" : "Standby"%>
+                                System Load: <%= (isFanOn || isHeaterOn || isLightOn) ? "Active" : "Standby"%>
                             </div>
                         </div>
 

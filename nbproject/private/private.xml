@@ -3,38 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/WEB-INF/web.xml</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/RegisterServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/threshold.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/signup.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/model/Configuration.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/TestConnection.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/SystemLogServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/ThingSpeakFetcher.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/logout.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/DashboardServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/sidebar.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/style.css</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/images/logo_text.png</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/dashboard.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/SystemLogDAO.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/header.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/LogoutServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/Profile.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/ThresholdServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/login.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/UserDAO.java</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/analytics.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/ResetPasswordServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/DBConnection.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/model/User.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/LoginServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/AnalyticsServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/ResetPassword.jsp</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/TelegramNotifier.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/ProfileServlet.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/ConfigurationDAO.java</file>
-            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/debug.jsp</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/systemlogs.jsp</file>
         </group>
     </open-files>

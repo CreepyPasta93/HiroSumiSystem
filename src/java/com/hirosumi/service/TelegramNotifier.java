@@ -1,16 +1,33 @@
 package com.hirosumi.service;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Properties;
 
 public class TelegramNotifier {
 
-    // 🔴 REPLACE THESE WITH YOUR ACTUAL DATA
-    private static final String BOT_TOKEN = "8141817246:AAEYb1uTDFc3QstWGqV410anx6VIVf5JS_Q";
-    private static final String CHAT_ID = "695310284";
+    private static String BOT_TOKEN;
+    private static String CHAT_ID;
+
+    // This block automatically loads your secrets from config.properties
+    static {
+        try (InputStream input = TelegramNotifier.class.getClassLoader().getResourceAsStream("config.properties")) {
+            Properties prop = new Properties();
+            if (input == null) {
+                System.err.println("❌ Unable to find config.properties");
+            } else {
+                prop.load(input);
+                BOT_TOKEN = prop.getProperty("TELEGRAM_BOT_TOKEN");
+                CHAT_ID = prop.getProperty("TELEGRAM_CHAT_ID");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static boolean sendAlert(String message) {
         try {
@@ -53,7 +70,7 @@ public class TelegramNotifier {
         if (success) {
             System.out.println("✅ Message sent successfully!");
         } else {
-            System.out.println("❌ Failed to send message. Check Token/ChatID.");
+            System.out.println("❌ Failed to send message. Check Token/ChatID in config.properties.");
         }
     }
 }

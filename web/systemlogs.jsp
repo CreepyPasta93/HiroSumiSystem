@@ -381,21 +381,6 @@
                         </div>
                     </div>
 
-                    <div class="config-card">
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <div class="config-icon"><i class="fa-brands fa-telegram"></i></div>
-                            <div class="config-info">
-                                <h3>Telegram Alerts</h3>
-                                <p>Status: <strong>Active</strong> • Bot: @HiroSumiBot</p>
-                            </div>
-                        </div>
-                        <div>
-                            <button class="btn-telegram" onclick="sendTestAlert()" id="testBtn">
-                                <i class="fa-solid fa-paper-plane"></i> Test Alert
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="logs-controls-bar">
                         <div class="logs-tabs">
                             <a href="#" class="tab-link active" onclick="filterCategory('ALL')">All Logs</a>
