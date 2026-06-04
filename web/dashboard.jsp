@@ -98,241 +98,17 @@
     <head>
         <title>HiroSumi - Dashboard</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <style>
-            /* --- 🎨 LAYOUT & SIDEBAR STYLES --- */
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: -280px;
-                width: 260px;
-                height: 100vh;
-                background-color: var(--bg-pink);
-                z-index: 1000;
-                transition: left 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            }
-            .sidebar.active {
-                left: 0;
-            }
-            .sidebar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(62, 39, 35, 0.3);
-                z-index: 900;
-                display: none;
-                opacity: 0;
-                transition: opacity 0.3s;
-            }
-            .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-
-            .dashboard-container {
-                display: block;
-            }
-            .main-content {
-                width: 100%;
-            }
-
-            /* --- 📦 CENTER MODAL STYLES (Robust & Visible) --- */
-            .modal {
-                display: none; /* Hidden by default */
-                position: fixed;
-                z-index: 2000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(62, 39, 35, 0.5); /* Dim Background */
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(2px);
-            }
-            .modal-content {
-                background-color: #FFF8F0;
-                padding: 30px;
-                border-radius: 20px;
-                width: 350px;
-                border: 3px solid #F8BBD0;
-                text-align: center;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                animation: popIn 0.3s ease;
-            }
-            @keyframes popIn {
-                from {
-                    transform: scale(0.8);
-                    opacity: 0;
-                }
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-
-            .btn-close-modal {
-                background: #557159;
-                color: white;
-                border: none;
-                padding: 10px 25px;
-                border-radius: 20px;
-                font-weight: bold;
-                cursor: pointer;
-                margin-top: 15px;
-            }
-            .btn-close-modal:hover {
-                background: #33691E;
-            }
-
-            /* Responsive Design */
-            @media (max-width: 768px) {
-                .row-hero, .row-status {
-                    flex-direction: column;
-                }
-                .hero-graph-container, .hero-live-card, .dash-card {
-                    width: 100% !important;
-                    margin-bottom: 20px;
-                }
-            }
-
-            /* Custom Legend Styles */
-            .chart-legend {
-                display: flex;
-                justify-content: center;
-                gap: 20px;
-                margin-top: 10px;
-                font-family: 'Quicksand', sans-serif;
-                font-weight: bold;
-            }
-            .legend-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 0.85rem;
-            }
-            .dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-            }
-
-            /* --- 🌿 ATMOSPHERE AESTHETIC UPGRADES --- */
-            .atmosphere-value-container {
-                display: flex;
-                align-items: baseline;
-                gap: 5px;
-                margin: 10px 0;
-            }
-
-            .main-temp {
-                font-size: 4rem;
-                font-weight: 800;
-                font-family: 'Quicksand', sans-serif;
-                letter-spacing: -2px;
-                text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-            }
-
-            .temp-unit {
-                font-size: 1.5rem;
-                font-weight: 700;
-                opacity: 0.8;
-            }
-
-            .metric-pill {
-                background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(4px);
-                padding: 6px 15px;
-                border-radius: 50px;
-                font-size: 0.85rem;
-                font-weight: 600;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: transform 0.3s ease;
-            }
-
-            .metric-pill:hover {
-                transform: scale(1.05);
-                background: rgba(255, 255, 255, 0.25);
-            }
-            /* --- ⏱️ UPTIME SYSTEM EFFECTS --- */
-            .uptime-monitor {
-                text-align: center;
-                padding: 10px;
-            }
-
-            .uptime-clock {
-                font-family: 'JetBrains Mono', 'Courier New', monospace;
-                font-size: 2.2rem;
-                font-weight: 800;
-                color: #A5D6A7;
-                text-shadow: 0 0 10px rgba(165, 214, 167, 0.4);
-                letter-spacing: 2px;
-            }
-
-            /* Moving heartbeat line */
-            .heartbeat-line {
-                width: 80%;
-                height: 2px;
-                background: linear-gradient(90deg, transparent, #A5D6A7, transparent);
-                margin: 15px auto;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .heartbeat-line::after {
-                content: '';
-                position: absolute;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, #fff, transparent);
-                animation: sweep 2s infinite linear;
-            }
-
-            @keyframes sweep {
-                0% {
-                    left: -100%;
-                }
-                100% {
-                    left: 100%;
-                }
-            }
-
-            .pulse-dot {
-                height: 8px;
-                width: 8px;
-                background-color: #81C784;
-                border-radius: 50%;
-                display: inline-block;
-                box-shadow: 0 0 8px #81C784;
-                animation: pulse-animation 1.5s infinite;
-            }
-
-            @keyframes pulse-animation {
-                0% {
-                    transform: scale(0.95);
-                    box-shadow: 0 0 0 0 rgba(129, 199, 132, 0.7);
-                }
-                70% {
-                    transform: scale(1);
-                    box-shadow: 0 0 0 10px rgba(129, 199, 132, 0);
-                }
-                100% {
-                    transform: scale(0.95);
-                    box-shadow: 0 0 0 0 rgba(129, 199, 132, 0);
-                }
-            }
-        </style>
     </head>
     <body>
+
+        <button class="sidebar-open-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -349,46 +125,13 @@
         </div>
 
         <div class="dashboard-container">
-
-            <div class="sidebar" id="mySidebar">
-                <img src="${pageContext.request.contextPath}/images/logo_dark.png" alt="HiroSumi" class="sidebar-logo">
-
-                <div style="text-align: right; padding-right: 20px;">
-                    <i class="fa-solid fa-xmark" onclick="toggleSidebar()" style="cursor: pointer; font-size: 1.5rem; color: #880E4F;"></i>
-                </div>
-
-                <%
-                    // 1. Define the variable right here so the HTML below can definitely see it
-                    com.hirosumi.model.User sessionUser = (com.hirosumi.model.User) session.getAttribute("currentUser");
-                    String currentRole = "Volunteer";
-                    if (sessionUser != null && sessionUser.getRole() != null) {
-                        currentRole = sessionUser.getRole().trim();
-                    }
-                %>
-
-                <div class="nav-menu">
-                    <a href="DashboardServlet" class="nav-item active"><i class="fa-solid fa-table-columns"></i> <span>Dashboard</span></a>
-                    <a href="AnalyticsServlet" class="nav-item"><i class="fa-solid fa-chart-line"></i> <span>Analytics</span></a>
-                    <a href="SystemLogServlet" class="nav-item"><i class="fa-solid fa-file-lines"></i> <span>System Logs</span></a>
-
-                    <% if ("Technician".equalsIgnoreCase(currentRole)) { %>
-                    <a href="TechThresholdServlet" class="nav-item"><i class="fa-solid fa-wrench"></i> <span>Tech Panel</span></a>
-                    <% } else { %>
-                    <a href="ThresholdServlet" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Threshold</span></a>
-                    <% }%>
-
-                    <a href="ProfileServlet" class="nav-item"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
-                </div>
-
-                <div class="bottom-menu">
-                    <a href="logout.jsp" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a>
-                </div>
-            </div>
+            <% request.setAttribute("activePage", "dashboard");%>
+            <jsp:include page="sidebar.jsp" />
 
             <div class="main-content">
                 <jsp:include page="header.jsp" />
 
-                <div class="dashboard-layout" style="padding-top: 20px;">
+                <div class="dashboard-layout">
 
                     <div class="row-hero">
 
@@ -412,173 +155,230 @@
                             <input type="hidden" id="endDate">
                         </div>
 
-                        <div class="dash-card hero-live-card" style="background: linear-gradient(145deg, #4E6F52, #3b543e); color: #F1F8E9; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; border: none; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 10px;">
-                                <div style="font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;">
-                                    <i class="fa-solid fa-cloud-sun-ray" style="color:#A5D6A7; margin-right: 8px;"></i> LIVE ATMOSPHERE
+                        <!-- Live Atmosphere Card -->
+                        <div class="dash-card hero-live-card live-atmosphere-card">
+                            <div class="live-atmosphere-header">
+                                <div>
+                                    <h3>Live Atmosphere</h3>
+                                    <p>Current environment at a glance</p>
                                 </div>
-                                <i class="fa-solid fa-bell" id="bellIcon" onclick="triggerTelegramReport()" 
-                                   style="opacity: 0.8; cursor: pointer; font-size: 1.2rem;" 
-                                   title="Send Status to Telegram"></i>
                             </div>
 
-                            <div style="display:flex; flex-direction: column; gap: 15px;">
+                            <div class="live-atmosphere-main">
                                 <div class="atmosphere-value-container">
                                     <span class="main-temp">${latest.temperature}</span>
                                     <span class="temp-unit">°C</span>
                                 </div>
 
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div class="live-metric-row">
                                     <div class="metric-pill">
                                         <i class="fa-solid fa-droplet" style="color: #90CAF9;"></i> 
-                                        <%= (d != null) ? String.format("%.1f", d.getHumidity()) : "0.0"%>% <span style="opacity: 0.6; font-size: 0.7rem;">HUM</span>
+                                        <%= (d != null) ? String.format("%.1f", d.getHumidity()) : "0.0"%>% 
+                                        <span>HUM</span>
                                     </div>
+
                                     <div class="metric-pill">
                                         <i class="fa-solid fa-gauge-high" style="color: #FFF59D;"></i> 
-                                        <%= (d != null) ? String.format("%.1f", d.getPressure()) : "0.0"%> <span style="opacity: 0.6; font-size: 0.7rem;">KPA</span>
+                                        <%= (d != null) ? String.format("%.1f", d.getPressure()) : "0.0"%> 
+                                        <span>KPA</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 20px; background: rgba(241, 248, 233, 0.95); color: #2E4E32; padding: 18px; border-radius: 18px; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                <div style="font-family: 'Quicksand', sans-serif; font-size: 0.9rem; font-weight: 800; margin-bottom: 6px; color: #1B5E20; display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #4CAF50; animation: pulse 2s infinite;"></div>
-                                    <i class="fa-solid <%= comfortIcon%>"></i> <%= comfortTitle%>
+                            <div class="comfort-card">
+                                <div class="comfort-title">
+                                    <span class="comfort-dot"></span>
+                                    <i class="fa-solid <%= comfortIcon%>"></i>
+                                    <span><%= comfortTitle%></span>
                                 </div>
-                                <div style="font-size: 0.85rem; line-height: 1.5; font-weight: 500; opacity: 0.9;">
+
+                                <div class="comfort-desc">
                                     "<%= comfortDesc%>"
                                 </div>
                             </div>
 
-                            <i class="fa-solid fa-cat" style="position: absolute; top: 40px; right: -20px; font-size: 10rem; color: rgba(255,255,255,0.03); transform: rotate(15deg); pointer-events: none;"></i>
+                            <img 
+                                src="${pageContext.request.contextPath}/images/cat-live-atmosphere.png" 
+                                alt="Sleeping cat"
+                                class="live-cat-img"
+                                >
                         </div>
                     </div>
 
                     <div class="row-status">
 
-                        <div class="dash-card bg-pink" style="display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; overflow:hidden;">
-                            <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; z-index:2;">
-                                <div class="card-title" style="color:#880E4F; margin:0;">Actuators</div>
-                                <%
-                                    long diffSeconds = (new java.util.Date().getTime() - d.getTimestamp().getTime()) / 1000;
-                                    boolean isOnline = diffSeconds < 120;
+                        <!-- Actuator Card -->
+                        <div class="dash-card actuator-card">
 
-                                    // --- NEW: ESTIMATE ACTUATOR STATES FOR UI ---
-                                    boolean isFanOn = (d.getFanStatus() == 1);
-                                    boolean isHeaterOn = (currentTemp <= 28.0); // Faked for UI based on your current temp
-                                    boolean isLightOn = (motion == 1); // If motion is active, light is likely on
-%>
-                                <div style="background:<%= isOnline ? "#4CAF50" : "rgba(255,255,255,0.4)"%>; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:bold; color:<%= isOnline ? "white" : "#880E4F"%>;">
+                            <%
+                                boolean hasData = (d != null && d.getTimestamp() != null);
+
+                                long diffSeconds = hasData
+                                        ? (new java.util.Date().getTime() - d.getTimestamp().getTime()) / 1000
+                                        : 999999;
+
+                                boolean isOnline = hasData && diffSeconds < 120;
+
+                                boolean isFanOn = isOnline && d != null && d.getFanStatus() == 1;
+                                boolean isHeaterOn = isOnline && d != null && currentTemp < 20.0;
+                                boolean isLightOn = isOnline && motion == 1;
+                            %>
+
+                            <div class="actuator-card-header">
+                                <div class="card-title actuator-title">Actuators</div>
+
+                                <div class="actuator-status-pill <%= isOnline ? "online" : "offline"%>">
                                     <%= isOnline ? "ONLINE" : "OFFLINE"%>
                                 </div>
                             </div>
 
-                            <div style="display:flex; gap:20px; align-items:center; z-index:2;">
+                            <div class="actuator-icons">
 
-                                <!-- HEATER ICON -->
-                                <div style="text-align:center; <%= isHeaterOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
-                                    <div style="width:50px; height:50px; background:<%= isHeaterOn ? "#F8BBD0" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isHeaterOn ? "#AD1457" : "transparent"%>;">
-                                        <i class="fa-solid fa-fire <%= isHeaterOn ? "fa-fade" : ""%>" style="font-size:1.5rem; color:#AD1457;"></i>
+                                <!-- Heater -->
+                                <div class="actuator-item <%= isHeaterOn ? "active" : "inactive"%>">
+                                    <div class="actuator-circle">
+                                        <i class="fa-solid fa-fire <%= isHeaterOn ? "fa-fade" : ""%>"></i>
                                     </div>
-                                    <div style="font-size:0.7rem; font-weight:bold; color:#880E4F;">Heater</div>
+                                    <span>Heater</span>
                                 </div>
 
-                                <!-- FAN ICON -->
-                                <div style="text-align:center; <%= isFanOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
-                                    <div style="width:60px; height:60px; background:<%= isFanOn ? "#F8BBD0" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isFanOn ? "#AD1457" : "transparent"%>;">
-                                        <i class="fa-solid fa-fan <%= isFanOn ? "fa-spin" : ""%>" style="font-size:2rem; color:#AD1457;"></i>
+                                <!-- Ventilation -->
+                                <div class="actuator-item <%= isFanOn ? "active" : "inactive"%>">
+                                    <div class="actuator-circle actuator-main">
+                                        <i class="fa-solid fa-fan <%= isFanOn ? "fa-spin" : ""%>"></i>
                                     </div>
-                                    <div style="font-size:0.8rem; font-weight:bold; color:#880E4F;">Ventilation</div>
+                                    <span>Ventilation</span>
                                 </div>
 
-                                <!-- LIGHTS ICON -->
-                                <div style="text-align:center; <%= isLightOn ? "opacity: 1.0;" : "opacity: 0.5;"%> transition: 0.3s;">
-                                    <div style="width:50px; height:50px; background:<%= isLightOn ? "#FFF59D" : "rgba(255,255,255,0.3)"%>; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:5px; border: 2px solid <%= isLightOn ? "#FBC02D" : "transparent"%>;">
-                                        <i class="fa-solid fa-lightbulb <%= isLightOn ? "fa-beat-fade" : ""%>" style="font-size:1.5rem; color:#F57F17;"></i>
+                                <!-- Lights -->
+                                <div class="actuator-item <%= isLightOn ? "active" : "inactive"%>">
+                                    <div class="actuator-circle">
+                                        <i class="fa-solid fa-lightbulb <%= isLightOn ? "fa-beat-fade" : ""%>"></i>
                                     </div>
-                                    <div style="font-size:0.7rem; font-weight:bold; color:#880E4F;">Lights</div>
+                                    <span>Lights</span>
                                 </div>
+
                             </div>
 
-                            <div style="margin-top:10px; font-size:0.8rem; color:#AD1457; font-weight:bold; z-index:2;">
-                                System Load: <%= (isFanOn || isHeaterOn || isLightOn) ? "Active" : "Standby"%>
+                            <div class="actuator-load-text">
+                                Status: <%= (isFanOn || isHeaterOn || isLightOn) ? "Running" : "Standby"%>
                             </div>
+
                         </div>
 
-                        <div class="dash-card bg-cream" style="position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div class="card-title" style="color:#3E2723; margin:0;">Occupancy</div>
-                                <i class="fa-solid fa-walking" style="color:#D81B60; opacity:0.5;"></i>
+                        <!-- Occupancy Card -->
+                        <div class="dash-card occupancy-card">
+
+                            <div class="occupancy-header">
+                                <div class="card-title occupancy-title">Occupancy</div>
+                                <i class="fa-solid fa-person-walking occupancy-walk-icon"></i>
                             </div>
-                            <div style="text-align:center; position:relative; z-index:2; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
-                                <div style="font-size:2.2rem; margin: 10px 0; display:flex; justify-content:center; gap:10px;">
-                                    <i class="fa-solid fa-paw" style="color: <%= (pawsActive >= 1) ? "#D81B60" : "rgba(0,0,0,0.1)"%>; transition:0.3s;"></i>
-                                    <i class="fa-solid fa-paw" style="color: <%= (pawsActive >= 2) ? "#E57373" : "rgba(0,0,0,0.1)"%>; transition:0.3s;"></i>
-                                    <i class="fa-solid fa-paw" style="color: <%= (pawsActive >= 3) ? "#FFB74D" : "rgba(0,0,0,0.1)"%>; transition:0.3s;"></i>
+
+                            <div class="occupancy-content">
+
+                                <div class="occupancy-paws">
+                                    <i class="fa-solid fa-paw <%= (pawsActive >= 1) ? "paw-active paw-main" : "paw-inactive"%>"></i>
+                                    <i class="fa-solid fa-paw <%= (pawsActive >= 2) ? "paw-active paw-mid" : "paw-inactive"%>"></i>
+                                    <i class="fa-solid fa-paw <%= (pawsActive >= 3) ? "paw-active paw-light" : "paw-inactive"%>"></i>
                                 </div>
-                                <div style="font-size:1.1rem; font-weight:800; color:<%= occColor%>; margin-bottom:5px;">
+
+                                <div class="occupancy-status" style="color:<%= occColor%>;">
                                     <%= occStatus%>
                                 </div>
+
                             </div>
-                            <div style="background:rgba(255,255,255,0.6); padding:8px 12px; border-radius:10px; font-size:0.75rem; color:#5D4037; line-height:1.3; text-align:center; border: 1px solid rgba(216, 27, 96, 0.1);">
-                                <i class="fa-regular fa-clock"></i> Paws fade from 3 to 1 over 20 mins of inactivity.
+
+                            <div class="occupancy-info-box">
+                                <i class="fa-regular fa-clock"></i>
+                                <span>Paws fade from 3 to 1 over 20 mins of inactivity.</span>
                             </div>
-                            <i class="fa-solid fa-cat" style="position:absolute; bottom:30px; left:-10px; font-size:6rem; color:rgba(216, 27, 96, 0.03); transform:rotate(15deg);"></i>
+
+                            <i class="fa-solid fa-cat occupancy-bg-cat"></i>
+
                         </div>
 
-                        <div class="dash-card bg-green" style="background: linear-gradient(135deg, #4E6F52 0%, #3b543e 100%); display:flex; flex-direction:column; position:relative; overflow:hidden; border:none;"> 
+                        <!-- System Uptime Card -->
+                        <div class="dash-card uptime-card">
 
-                            <div style="display:flex; justify-content:space-between; align-items:center; z-index:2; margin-bottom: 5px;">
-                                <div class="card-title" style="color:rgba(255,255,255,0.9); font-weight:700; font-family:'Quicksand';">System Uptime</div>
-                                <div style="font-size: 0.65rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px; color: #A5D6A7; font-weight: bold; border: 1px solid rgba(165, 214, 167, 0.3);">
+                            <div class="uptime-card-header">
+                                <div class="card-title uptime-title">System Uptime</div>
+
+                                <div class="uptime-health-pill">
                                     HEALTHY 100%
                                 </div>
                             </div>
 
-                            <div class="uptime-monitor" style="z-index:2; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                            <div class="uptime-monitor">
                                 <div class="uptime-clock">
                                     <span id="uptime-h">00</span>:<span id="uptime-m">00</span>:<span id="uptime-s">00</span>
                                 </div>
 
-                                <div class="heartbeat-line"></div>
+                                <div class="uptime-heartbeat">
+                                    <svg viewBox="0 0 260 50" preserveAspectRatio="none">
+                                    <polyline 
+                                        points="0,25 80,25 92,25 102,15 114,35 128,25 150,25 160,18 170,32 184,25 260,25"
+                                        />
+                                    </svg>
+                                </div>
 
-                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <div class="uptime-status">
                                     <div class="pulse-dot"></div>
-                                    <span style="font-size:0.75rem; font-weight:bold; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase;">
-                                        Operational Since Boot
-                                    </span>
+                                    <span>Operational Since Boot</span>
                                 </div>
                             </div>
 
-                            <i class="fa-solid fa-microchip" style="position:absolute; bottom:-15px; right:-15px; font-size:6rem; color:rgba(255,255,255,0.03); transform:rotate(-15deg); pointer-events: none;"></i>
+                            <img 
+                                src="${pageContext.request.contextPath}/images/cat-uptime.png" 
+                                alt="Sleeping cat"
+                                class="uptime-cat"
+                                >
                         </div>
 
-                        <div class="dash-card bg-cream" style="border-color:#557159; position:relative; overflow:hidden;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; z-index:2; position:relative;">
-                                <div class="card-title" style="color:#557159; margin:0;">Data Sync</div>
-                                <div style="font-size:0.7rem; background:#557159; color:white; padding:2px 6px; border-radius:4px;">AUTO</div>
+                        <!-- Data Sync Card -->
+                        <!-- Data Sync Card -->
+                        <div class="dash-card data-sync-card">
+
+                            <div class="data-sync-header">
+                                <div class="card-title data-sync-title">Data Sync</div>
+                                <div class="data-sync-pill">AUTO</div>
                             </div>
-                            <div style="margin-top:15px; position:relative; z-index:2;">
-                                <div style="font-size:0.7rem; color:#888; letter-spacing:1px; font-weight:bold;">LAST ENTRY</div>
-                                <div style="font-size:1.4rem; font-weight:bold; color:#3E2723; font-family: 'Georgia', serif;">
-                                    <%= (d != null && d.getTimestamp() != null)
-                                            ? d.getTimestamp().toString().substring(11, 16)
-                                            : "<span style='font-size:1rem; color:red;'>No Data</span>"%>
-                                    <span style="font-size:0.8rem; color:#888; font-family:sans-serif;">Today</span>
+
+                            <div class="data-sync-body">
+
+                                <div class="sync-section">
+                                    <div class="sync-label">LAST ENTRY</div>
+
+                                    <div class="sync-time">
+                                        <%= (d != null && d.getTimestamp() != null)
+                                                ? d.getTimestamp().toString().substring(11, 16)
+                                                : "<span style='font-size:1rem; color:#d85c7d;'>No Data</span>"%>
+                                        <span>Today</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div style="margin-top:15px; padding-top:10px; border-top:1px dashed rgba(0,0,0,0.1); position:relative; z-index:2;">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:0.7rem; color:#888; font-weight:bold;">NEXT UPDATE</span>
-                                    <span style="font-size:0.9rem; font-weight:bold; color:#557159;">
-                                        <i class="fa-solid fa-rotate" style="font-size:0.8rem;"></i> 
-                                        <span id="update-timer">00:45</span>
-                                    </span>
+
+                                <div class="sync-divider"></div>
+
+                                <div class="sync-section">
+                                    <div class="sync-label">NEXT UPDATE</div>
+
+                                    <div class="sync-next-row">
+                                        <div class="sync-next-time" id="update-timer">00:45</div>
+                                        <i class="fa-solid fa-rotate sync-rotate-icon"></i>
+                                    </div>
                                 </div>
+
                             </div>
-                            <i class="fa-solid fa-rotate" style="position:absolute; bottom:-15px; right:-15px; font-size:5rem; color:rgba(85, 113, 89, 0.05);"></i>
-                        </div> 
+
+                            <img 
+                                src="${pageContext.request.contextPath}/images/cat-data-sync.png" 
+                                alt="Cute cat"
+                                class="data-sync-cat"
+                                >
+
+                            <i class="fa-solid fa-sparkles data-sync-sparkle"></i>
+
+                        </div>
+
                     </div> 
                 </div>
             </div> 
@@ -587,8 +387,13 @@
         <script>
             // --- 1. SIDEBAR LOGIC ---
             function toggleSidebar() {
-                document.getElementById('mySidebar').classList.toggle('active');
-                document.querySelector('.sidebar-overlay').classList.toggle('active');
+                const sidebar = document.getElementById('mySidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+
+                if (sidebar && overlay) {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                }
             }
 
             // --- 2. MODAL LOGIC (Replaces Toast) ---
@@ -623,16 +428,17 @@
 
             // --- 3. BELL BUTTON LOGIC ---
             function triggerTelegramReport() {
-                const bell = document.getElementById('bellIcon');
+                const headerBellIcon = document.getElementById('headerBellIcon');
 
-                // Visual Feedback
-                bell.classList.remove('fa-bell');
-                bell.classList.add('fa-spinner', 'fa-spin');
+                if (headerBellIcon) {
+                    headerBellIcon.className = 'fa-solid fa-spinner fa-spin';
+                }
 
                 fetch('DashboardServlet?action=sendReport')
                         .then(response => {
-                            if (!response.ok)
+                            if (!response.ok) {
                                 throw new Error("Server Error");
+                            }
                             return response.text();
                         })
                         .then(result => {
@@ -647,9 +453,9 @@
                             showModal("System Error", "Something went wrong. Check browser console.", false);
                         })
                         .finally(() => {
-                            // Restore Icon
-                            bell.classList.remove('fa-spinner', 'fa-spin');
-                            bell.classList.add('fa-bell');
+                            if (headerBellIcon) {
+                                headerBellIcon.className = 'fa-regular fa-bell';
+                            }
                         });
             }
 
@@ -664,22 +470,52 @@
             document.getElementById('endDate').value = toLocalISOString(now);
             document.getElementById('startDate').value = toLocalISOString(yesterday);
 
+            const hoverLinePlugin = {
+                id: 'hoverLinePlugin',
+                afterDatasetsDraw(chart) {
+                    const tooltip = chart.tooltip;
+
+                    if (tooltip && tooltip._active && tooltip._active.length) {
+                        const ctx = chart.ctx;
+                        const activePoint = tooltip._active[0];
+                        const x = activePoint.element.x;
+                        const topY = chart.chartArea.top;
+                        const bottomY = chart.chartArea.bottom;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(x, topY);
+                        ctx.lineTo(x, bottomY);
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.strokeStyle = 'rgba(214, 90, 104, 0.35)';
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            };
+
             // --- 4. CHART CONFIGURATION (Strawberry Matcha Edition) ---
             const myChart = new Chart(ctx, {
                 type: 'line',
+                plugins: [hoverLinePlugin],
                 data: {
                     labels: [],
                     datasets: [
                         {
                             label: 'Temperature (°C)',
                             data: [],
-                            borderColor: '#557159', // Matcha Green
+                            borderColor: '#557159',
                             backgroundColor: 'rgba(85, 113, 89, 0.1)',
                             fill: true,
                             tension: 0.4,
                             borderWidth: 4,
-                            pointRadius: 0, // Cleaner look without dots
-                            pointHitRadius: 10,
+                            pointRadius: 0,
+                            pointHoverRadius: 7,
+                            pointHoverBorderWidth: 4,
+                            pointHitRadius: 18,
+                            pointHoverBackgroundColor: '#FFF8F0',
+                            pointHoverBorderColor: '#557159',
                             yAxisID: 'y'
                         },
                         {
@@ -691,16 +527,20 @@
                             borderDash: [5, 5], // Dashed line for contrast
                             tension: 0.4,
                             pointRadius: 0,
+                            pointHoverBackgroundColor: '#FFF8F0',
+                            pointHoverBorderColor: '#D65A68',
                             yAxisID: 'y'
                         },
                         {
                             label: 'Pressure (kPa)',
                             data: [],
-                            borderColor: '#EBCB8B', // Creamy Gold
+                            borderColor: '#EBCB8B', // Creamy Gold                            
                             backgroundColor: 'transparent',
                             borderWidth: 2,
                             tension: 0.4,
                             pointRadius: 0,
+                            pointHoverBackgroundColor: '#FFF8F0',
+                            pointHoverBorderColor: '#EBCB8B',
                             yAxisID: 'y1'
                         }
                     ]
@@ -708,6 +548,12 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
                     plugins: {
                         legend: {
                             display: true, // Show the legend for the lecturer!
@@ -719,12 +565,67 @@
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(255, 250, 245, 0.9)',
-                            titleColor: '#3E2723',
+                            enabled: true,
+                            backgroundColor: 'rgba(255, 248, 240, 0.98)',
+                            titleColor: '#D65A68',
                             bodyColor: '#3E2723',
                             borderColor: '#F8BBD0',
-                            borderWidth: 1,
-                            displayColors: true
+                            borderWidth: 2,
+                            displayColors: false,
+                            padding: {
+                                top: 12,
+                                bottom: 12,
+                                left: 16,
+                                right: 16
+                            },
+                            cornerRadius: 18,
+                            caretSize: 8,
+                            caretPadding: 8,
+                            titleAlign: 'center',
+                            bodyAlign: 'left',
+                            titleFont: {
+                                family: 'Quicksand',
+                                size: 14,
+                                weight: '900'
+                            },
+                            bodyFont: {
+                                family: 'Quicksand',
+                                size: 12,
+                                weight: '800'
+                            },
+                            callbacks: {
+                                title: function (context) {
+                                    return '🍓 Sensor Reading • ' + context[0].label;
+                                },
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+
+                                    if (label.includes('Temperature')) {
+                                        return '🌿  Temperature     ' + value.toFixed(2) + ' °C';
+                                    }
+
+                                    if (label.includes('Humidity')) {
+                                        return '💧  Humidity        ' + value.toFixed(2) + ' %';
+                                    }
+
+                                    if (label.includes('Pressure')) {
+                                        return '🌼  Pressure        ' + value.toFixed(2) + ' kPa';
+                                    }
+
+                                    return label + ': ' + value;
+                                },
+                                footer: function () {
+                                    return '🐾 HiroSumi is monitoring safely';
+                                }
+                            },
+                            footerColor: '#557159',
+                            footerFont: {
+                                family: 'Quicksand',
+                                size: 11,
+                                weight: '800',
+                                style: 'italic'
+                            }
                         }
                     },
                     scales: {
@@ -768,7 +669,9 @@
             // --- 5. UPTIME & TIMER LOGIC ---
             const systemStartTime = <%= systemStart.getTime()%>;
             <% com.hirosumi.model.SensorData dJS = (com.hirosumi.model.SensorData) request.getAttribute("latest");%>
-            const lastEntryTime = <%= (dJS != null) ? dJS.getTimestamp().getTime() : "new Date().getTime()"%>;
+            const lastEntryTime = <%= (dJS != null && dJS.getTimestamp() != null)
+                    ? dJS.getTimestamp().getTime()
+                    : "new Date().getTime()"%>;
 
             function updateUptime() {
                 const now = new Date().getTime();
@@ -792,7 +695,7 @@
                 const now = new Date().getTime();
                 let diff = targetNextUpdate - now;
                 if (diff <= 0) {
-                    document.getElementById('update-timer').innerText = "Updating...";
+                    document.getElementById('update-timer').innerText = "Syncing";
                 } else {
                     const mins = Math.floor(diff / 60000);
                     const secs = Math.floor((diff % 60000) / 1000);

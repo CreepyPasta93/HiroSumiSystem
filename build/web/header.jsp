@@ -1,37 +1,55 @@
 <%@page import="com.hirosumi.model.User"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.util.Date"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <%
-    // 1. Get current user
     User headerUser = (User) session.getAttribute("currentUser");
 
-    // 2. Avatar Logic
-    String headerAvatarUrl = "https://i.pravatar.cc/150?u=default"; 
+    String headerName = "User";
+
     if (headerUser != null) {
-        if (headerUser.getProfileImage() != null && !headerUser.getProfileImage().isEmpty()) {
-            headerAvatarUrl = "images/" + headerUser.getProfileImage();
-        } else {
-            headerAvatarUrl = "https://i.pravatar.cc/150?u=" + headerUser.getUsername();
+        if (headerUser.getFullName() != null && !headerUser.getFullName().trim().isEmpty()) {
+            headerName = headerUser.getFullName().trim();
+        } else if (headerUser.getUsername() != null && !headerUser.getUsername().trim().isEmpty()) {
+            headerName = headerUser.getUsername().trim();
         }
     }
+
+    String currentDate = new SimpleDateFormat("MMM dd, yyyy").format(new Date());
+    String currentTime = new SimpleDateFormat("hh:mm a").format(new Date());
 %>
 
-<div class="top-bar" style="background-color: #FFF8F0; border-bottom: 3px solid #FFCDD2;">
-    
-    <div style="display: flex; align-items: center; gap: 20px;">
-        <i class="fa-solid fa-bars" onclick="toggleSidebar()" style="font-size: 1.5rem; color: #D81B60; cursor: pointer; transition: transform 0.2s;"></i>
-        
-        <img src="${pageContext.request.contextPath}/images/logo_text.png" class="header-logo-text" alt="HiroSumi Logo" style="height: 40px;">
+<header class="dashboard-header">
+
+    <div class="header-greeting">
+        <h1>
+            Good morning, <span><%= headerName %>!</span>
+            <span class="paw-accent">🐾</span>
+        </h1>
+        <p>Thank you for caring for our little friends. 🌿</p>
     </div>
-    
-    <div class="user-profile">
-        <% if (headerUser != null) { %>
-            <div class="user-info">
-                <div style="font-weight:bold; color:#3E2723;"><%= headerUser.getFullName() %></div>
-                <div style="font-size:0.8rem; color:#888;"><%= headerUser.getRole() %></div>
+
+    <div class="header-actions">
+
+        <div class="header-date-box">
+            <i class="fa-regular fa-calendar-days"></i>
+            <div>
+                <strong><%= currentDate %></strong>
+                <span><%= currentTime %></span>
             </div>
-            
-            <div class="avatar-circle" style="border: 2px solid #FFCDD2;">
-                 <img src="<%= headerAvatarUrl %>" class="avatar-img">
-            </div>
-        <% } %>
+        </div>
+
+        <button class="header-bell-btn" id="headerBellBtn" onclick="triggerTelegramReport()" title="Send status to Telegram">
+            <i class="fa-regular fa-bell" id="headerBellIcon"></i>
+            <span class="bell-dot"></span>
+        </button>
+
+        <button class="header-send-btn" onclick="triggerTelegramReport()">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Send Report</span>
+        </button>
+
     </div>
-</div>
+
+</header>

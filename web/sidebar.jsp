@@ -2,65 +2,149 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    // 1. Fetch the current logged-in user from the session
     User currentUser = (User) session.getAttribute("currentUser");
-    
-    // 2. Safely get their role, trim spaces, and default to Volunteer
-    String userRole = "Volunteer"; 
-    if (currentUser != null && currentUser.getRole() != null) {
-        userRole = currentUser.getRole().trim();
+
+    String userRole = "User";
+    String userName = "User";
+    String profileImage = "default-profile.jpg";
+
+    if (currentUser != null) {
+        if (currentUser.getRole() != null && !currentUser.getRole().trim().isEmpty()) {
+            userRole = currentUser.getRole().trim();
+        }
+
+        if (currentUser.getFullName() != null && !currentUser.getFullName().trim().isEmpty()) {
+            userName = currentUser.getFullName().trim();
+        } else if (currentUser.getUsername() != null && !currentUser.getUsername().trim().isEmpty()) {
+            userName = currentUser.getUsername().trim();
+        }
+
+        if (currentUser.getProfileImage() != null && !currentUser.getProfileImage().trim().isEmpty()) {
+            profileImage = currentUser.getProfileImage().trim();
+        }
     }
 
-    // 3. 🐾 THE FIX: Grab the current URL and force it to lowercase for bulletproof matching
     String currentUri = request.getRequestURI().toLowerCase();
+    String activePage = (String) request.getAttribute("activePage");
+
+    boolean isDashboardActive = false;
+    boolean isAnalyticsActive = false;
+    boolean isLogsActive = false;
+    boolean isTechActive = false;
+    boolean isThresholdActive = false;
+    boolean isProfileActive = false;
+
+    if (activePage != null) {
+        isDashboardActive = "dashboard".equalsIgnoreCase(activePage);
+        isAnalyticsActive = "analytics".equalsIgnoreCase(activePage);
+        isLogsActive = "logs".equalsIgnoreCase(activePage);
+        isTechActive = "tech".equalsIgnoreCase(activePage);
+        isThresholdActive = "threshold".equalsIgnoreCase(activePage);
+        isProfileActive = "profile".equalsIgnoreCase(activePage);
+    } else {
+        isDashboardActive = currentUri.contains("dashboard");
+        isAnalyticsActive = currentUri.contains("analytics");
+        isLogsActive = currentUri.contains("systemlog") || currentUri.contains("systemlogs");
+        isTechActive = currentUri.contains("techthreshold") || currentUri.contains("tech_threshold");
+        isThresholdActive = currentUri.contains("threshold") && !currentUri.contains("tech");
+        isProfileActive = currentUri.contains("profile");
+    }
 %>
 
-<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="mySidebar">
 
-<div class="sidebar" id="mySidebar">
-    <img src="${pageContext.request.contextPath}/images/logo_dark.png" class="sidebar-logo" 
-         style="padding: 30px 0; display: block; margin: auto; width: 140px;">
-    
-    <div style="text-align: right; padding-right: 20px;">
-        <i class="fa-solid fa-xmark" onclick="toggleSidebar()" style="cursor: pointer; font-size: 1.5rem; color: #880E4F;"></i>
+    <!-- Logo Section -->
+    <div class="sidebar-logo-box">
+        <img
+            src="${pageContext.request.contextPath}/images/hirosumi_logo.png"
+            alt="HiroSumi Logo"
+            class="sidebar-logo-img"
+        >
     </div>
-    
-    <div class="nav-menu">
-        <a href="DashboardServlet" class="nav-item <%= currentUri.contains("dashboard") ? "active" : "" %>">
-            <i class="fa-solid fa-table-columns"></i> <span>Dashboard</span>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+
+        <a href="DashboardServlet"
+           class="sidebar-link <%= isDashboardActive ? "active" : ""%>">
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
         </a>
-        
-        <a href="AnalyticsServlet" class="nav-item <%= currentUri.contains("analytics") ? "active" : "" %>">
-            <i class="fa-solid fa-chart-line"></i> <span>Analytics</span>
+
+        <a href="AnalyticsServlet"
+           class="sidebar-link <%= isAnalyticsActive ? "active" : ""%>">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Analytics</span>
         </a>
-        
-        <a href="SystemLogServlet" class="nav-item <%= currentUri.contains("systemlog") ? "active" : "" %>">
-            <i class="fa-solid fa-file-lines"></i> <span>System Logs</span>
+
+        <a href="SystemLogServlet"
+           class="sidebar-link <%= isLogsActive ? "active" : ""%>">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span>System Logs</span>
         </a>
 
         <% if ("Technician".equalsIgnoreCase(userRole)) { %>
-            <a href="TechThresholdServlet" class="nav-item <%= currentUri.contains("techthreshold") ? "active" : "" %>">
-                <i class="fa-solid fa-wrench"></i> <span>Tech Panel</span>
+            <a href="TechThresholdServlet"
+               class="sidebar-link <%= isTechActive ? "active" : ""%>">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <span>Tech Panel</span>
             </a>
         <% } else { %>
-            <a href="ThresholdServlet" class="nav-item <%= currentUri.contains("threshold") && !currentUri.contains("tech") ? "active" : "" %>">
-                <i class="fa-solid fa-triangle-exclamation"></i> <span>Threshold</span>
+            <a href="ThresholdServlet"
+               class="sidebar-link <%= isThresholdActive ? "active" : ""%>">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Threshold</span>
             </a>
         <% } %>
 
-        <a href="ProfileServlet" class="nav-item <%= currentUri.contains("profile") ? "active" : "" %>">
-            <i class="fa-solid fa-gear"></i> <span>Settings</span>
-        </a>
-    </div>
-    
-    <div class="bottom-menu">
-        <a href="logout.jsp" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a>
-    </div>
-</div>
+    </nav>
 
-<script>
-    function toggleSidebar() { 
-        document.getElementById('mySidebar').classList.toggle('active'); 
-        document.querySelector('.sidebar-overlay').classList.toggle('active'); 
-    }
-</script>
+    <!-- Clickable User Card -->
+    <a href="ProfileServlet" class="sidebar-user-card <%= isProfileActive ? "active-profile" : "" %>">
+        <div class="sidebar-avatar">
+            <img
+                src="${pageContext.request.contextPath}/images/<%= profileImage%>"
+                alt="User Avatar"
+                onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/images/default-profile.jpg';"
+            >
+        </div>
+
+        <div class="sidebar-user-info">
+            <h4><%= userName%></h4>
+            <p><%= userRole%></p>
+        </div>
+
+        <span class="sidebar-online-dot"></span>
+    </a>
+
+    <!-- Quote Card -->
+    <div class="sidebar-quote-card">
+        <img
+            src="${pageContext.request.contextPath}/images/quote-sparkle.png"
+            alt="Sparkle"
+            class="quote-sparkle"
+        >
+
+        <p>“Every purr<br>makes a difference.”</p>
+
+        <img
+            src="${pageContext.request.contextPath}/images/cat-sidebar-quote.png"
+            alt="Cute Cat"
+            class="quote-cat"
+        >
+    </div>
+
+    <!-- Logout -->
+    <a href="logout.jsp" class="sidebar-logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Log Out</span>
+    </a>
+
+    <!-- Bottom Field Decoration -->
+    <img
+        src="${pageContext.request.contextPath}/images/sidebar-field.png"
+        alt="Field Decoration"
+        class="sidebar-field"
+    >
+
+</aside>

@@ -1,0 +1,537 @@
+/* =========================================
+   HIROSUMI SYSTEM LOGS PAGE
+========================================= */
+
+.logs-page .main-content {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.logs-page .main-content::after {
+    height: 120px;
+    opacity: 0.22;
+    bottom: -35px;
+}
+
+.logs-layout {
+    position: relative;
+    z-index: 2;
+    padding: 26px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: calc(100vh - 92px);
+    overflow: hidden;
+}
+
+/* ============================= */
+/* HEADER */
+/* ============================= */
+
+.logs-header-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 22px;
+}
+
+.logs-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logs-title-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: #fff8fb;
+    border: 2px solid #ffd1dc;
+    color: #d81b60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.65rem;
+    box-shadow: 0 8px 18px rgba(216, 27, 96, 0.10);
+}
+
+.logs-page-title {
+    margin: 0;
+    font-family: 'Comic Neue', 'Quicksand', sans-serif;
+    font-size: 2.15rem;
+    color: #3E2723;
+}
+
+.logs-page-subtitle {
+    margin: 5px 0 0;
+    font-size: 0.95rem;
+    color: #557159;
+    font-weight: 700;
+}
+
+/* ============================= */
+/* SEARCH + EXPORT */
+/* ============================= */
+
+.logs-tools {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.search-box {
+    position: relative;
+    width: 360px;
+    height: 48px;
+    background: rgba(255, 253, 248, 0.96);
+    border-radius: 999px;
+    border: 2px solid #f8bbd0;
+    padding: 0 48px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 18px rgba(216, 27, 96, 0.08);
+    transition: 0.25s ease;
+}
+
+.search-box:focus-within {
+    border-color: #d81b60;
+    box-shadow: 0 10px 22px rgba(216, 27, 96, 0.13);
+    transform: translateY(-1px);
+}
+
+.search-box i {
+    color: #f48fb1;
+    font-size: 1.05rem;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+    color: #5d4037;
+    background: transparent;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+}
+
+.search-input::placeholder {
+    color: #a7948d;
+}
+
+.search-strawberry {
+    position: absolute;
+    right: 16px;
+    font-size: 1.45rem;
+}
+
+.btn-export {
+    height: 48px;
+    background: #eef6e8;
+    border: 2px solid #d9e8cf;
+    color: #557159;
+    padding: 0 24px;
+    border-radius: 999px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    transition: 0.22s ease;
+    font-family: 'Quicksand', sans-serif;
+    box-shadow: 0 8px 16px rgba(85, 113, 89, 0.10);
+}
+
+.btn-export:hover {
+    background: #557159;
+    color: #fffaf0;
+    transform: translateY(-2px);
+}
+
+/* ============================= */
+/* TABS */
+/* ============================= */
+
+.logs-tabs {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tab-link {
+    min-height: 46px;
+    text-decoration: none;
+    color: #6d5048;
+    background: rgba(255, 253, 248, 0.95);
+    border: 1.8px solid #f2d6cb;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 900;
+    transition: 0.25s ease;
+    font-family: 'Quicksand', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 14px rgba(62, 39, 35, 0.045);
+}
+
+.tab-link i {
+    color: #e5738d;
+}
+
+.tab-link:hover {
+    transform: translateY(-2px);
+    border-color: #f8bbd0;
+    color: #d81b60;
+}
+
+.tab-link.active {
+    background: linear-gradient(135deg, #ff7d9b, #e84f78);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(216, 27, 96, 0.22);
+}
+
+.tab-link.active i {
+    color: white;
+}
+
+/* ============================= */
+/* TABLE CARD */
+/* ============================= */
+
+.logs-table-card {
+    position: relative;
+    background: rgba(255, 252, 251, 0.88);
+    border: 2px solid #f8bbd0;
+    border-radius: 30px;
+    padding: 18px;
+    box-shadow: 0 10px 24px rgba(62, 39, 35, 0.05);
+    overflow: visible;
+    flex: 1;
+    min-height: 0;
+}
+
+.logs-table-card::before {
+    content: "";
+    position: absolute;
+    inset: 12px 35px;
+    border: 1px solid rgba(248, 187, 208, 0.65);
+    border-radius: 24px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.logs-strawberry-deco {
+    position: absolute;
+    left: -40px;
+    bottom: -28px;
+    width: 165px;
+    z-index: 4;
+    opacity: 0.95;
+    pointer-events: none;
+}
+
+.logs-cat-deco {
+    position: absolute;
+    right: -35px;
+    bottom: -30px;
+    width: 190px;
+    z-index: 4;
+    opacity: 0.95;
+    pointer-events: none;
+}
+
+.logs-table-container {
+    position: relative;
+    z-index: 3;
+    background: rgba(255, 253, 248, 0.9);
+    border-radius: 22px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    max-height: 100%;
+    border: 1px solid rgba(248, 187, 208, 0.45);
+    margin: 0 45px;
+}
+
+.logs-table-container::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+.logs-table-container::-webkit-scrollbar-thumb {
+    background: #557159;
+    border-radius: 999px;
+    border: 2px solid #eef6e8;
+}
+
+.logs-table-container::-webkit-scrollbar-track {
+    background: rgba(85, 113, 89, 0.08);
+    border-radius: 999px;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Quicksand', sans-serif;
+    table-layout: fixed;
+    min-width: 0;
+}
+
+.logs-table th,
+.logs-table td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.logs-table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff0f5;
+    color: #8a164c;
+    padding: 17px 20px;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 900;
+    z-index: 5;
+    border-bottom: 2px solid #f8bbd0;
+}
+
+.logs-table thead th:first-child {
+    border-top-left-radius: 18px;
+}
+
+.logs-table thead th:last-child {
+    border-top-right-radius: 18px;
+}
+
+.logs-table tbody td {
+    padding: 17px 20px;
+    color: #5d4037;
+    font-size: 0.93rem;
+    border-bottom: 1px dashed rgba(242, 214, 203, 0.85);
+    background: rgba(255, 253, 248, 0.88);
+}
+
+.logs-table tbody tr:nth-child(even) td {
+    background: rgba(255, 248, 240, 0.85);
+}
+
+.logs-table tbody tr:hover td {
+    background: #fff2f6;
+}
+
+.log-id {
+    font-weight: 900;
+    color: #78935f;
+}
+
+.log-source {
+    font-weight: 900;
+    color: #557159;
+}
+
+.empty-log-row {
+    padding: 40px !important;
+    text-align: center;
+    color: #8a7a72 !important;
+    font-weight: 700;
+}
+
+/* ============================= */
+/* CATEGORY PILLS */
+/* ============================= */
+
+.category-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.category-action {
+    background: #ffe5ec;
+    color: #e84f78;
+    border: 1px solid #ffc5d5;
+}
+
+.category-system {
+    background: #eef6e8;
+    color: #557159;
+    border: 1px solid #d7e7d0;
+}
+
+.category-error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.category-alert {
+    background: #fff8d9;
+    color: #b98200;
+    border: 1px solid #f2d98d;
+}
+
+.category-info {
+    background: #eaf5ff;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+/* ============================= */
+/* STATUS BADGES */
+/* ============================= */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 110px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background: #eef7d8;
+    color: #557159;
+    border: 1px solid #d5e7b8;
+}
+
+.badge-success i {
+    color: #6a9d46;
+}
+
+.badge-failed {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.badge-warning {
+    background: #fff8d9;
+    color: #b98200;
+    border: 1px solid #f2d98d;
+}
+
+.badge-info {
+    background: #eaf5ff;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+/* ============================= */
+/* MODAL */
+/* ============================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    background-color: rgba(62, 39, 35, 0.5);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: #FFF8F0;
+    padding: 30px;
+    border-radius: 22px;
+    width: 350px;
+    border: 3px solid #F8BBD0;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: popIn 0.3s ease;
+}
+
+.btn-close-modal {
+    background: #557159;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 999px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 15px;
+    font-family: 'Quicksand', sans-serif;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================= */
+/* RESPONSIVE */
+/* ============================= */
+
+@media (max-width: 1000px) {
+    .logs-header-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .logs-tools {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        width: min(100%, 420px);
+    }
+}
+
+@media (max-width: 768px) {
+    .logs-layout {
+        padding: 22px 18px 130px;
+    }
+
+    .logs-page-title {
+        font-size: 1.75rem;
+    }
+
+    .logs-tabs {
+        gap: 10px;
+    }
+
+    .tab-link {
+        padding: 0 16px;
+        font-size: 0.82rem;
+    }
+
+    .logs-strawberry-deco {
+        width: 145px;
+        left: -38px;
+        bottom: -42px;
+    }
+
+    .logs-cat-deco {
+        width: 175px;
+        right: -28px;
+        bottom: -38px;
+    }
+}
+

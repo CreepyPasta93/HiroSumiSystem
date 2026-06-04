@@ -3,8 +3,35 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/threshold.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/analytics.css</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/SubmitThresholdRequestServlet.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/SystemLogServlet.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/config.properties</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/model/SystemLog.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/sidebar.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/images/hirosumi_logo.png</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/HandleNotificationServlet.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/style.css</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/profile.css</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/dashboard.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/GrokService.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/SystemLogDAO.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/tech_threshold.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/header.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/systemlogs.css</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/Profile.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/UserDAO.java</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/analytics.jsp</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/DBConnection.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/model/User.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/EnvironmentService.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/techpanel.css</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/controller/AnalyticsServlet.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/AnalyticsDAO.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/css/dashboard-custom.css</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/service/TelegramNotifier.java</file>
+            <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/src/java/com/hirosumi/dao/ConfigurationDAO.java</file>
             <file>file:/D:/AA%20Fyp/Development/HiroSumiSystem/web/systemlogs.jsp</file>
         </group>
     </open-files>

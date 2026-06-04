@@ -2,7 +2,7 @@ package com.hirosumi.controller;
 
 import com.hirosumi.dao.AnalyticsDAO;
 import com.hirosumi.model.SensorData;
-import com.hirosumi.service.ThingSpeakFetcher;
+import com.hirosumi.service.GrokService;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -14,41 +14,50 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "AnalyticsServlet", urlPatterns = {"/AnalyticsServlet"})
 public class AnalyticsServlet extends HttpServlet {
 
-    // 1. DISPLAY PAGE (Sync Data + Load KPIs + Load Table)
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // A. Sync ThingSpeak
-        //ThingSpeakFetcher fetcher = new ThingSpeakFetcher();
-        //fetcher.fetchAndSaveData();
-
-        // B. Fetch KPIs
         AnalyticsDAO dao = new AnalyticsDAO();
+
         double avgTemp = dao.getAverageTemp();
         double avgHum = dao.getAverageHumidity();
         String runtime = dao.getHeaterRuntime();
         int[] alerts = dao.getWeeklyAlerts();
 
-        // C. Fetch Table Data (Fixes the "No Data" issue)
         List<SensorData> dataList = dao.getAllReadings();
+        int totalRecords = (dataList != null) ? dataList.size() : 0;
 
-        // D. Send to JSP
+        GrokService grokService = new GrokService();
+        String aiInsight = grokService.generateAnalyticsInsight(
+                avgTemp,
+                avgHum,
+                runtime,
+                totalRecords
+        );
+
         request.setAttribute("avgTemp", avgTemp);
         request.setAttribute("avgHum", avgHum);
         request.setAttribute("heaterRuntime", runtime);
-        request.setAttribute("dataList", dataList); // Send the list!
+        request.setAttribute("dataList", dataList);
+        request.setAttribute("aiInsight", aiInsight);
 
         StringBuilder alertString = new StringBuilder();
+
         for (int i = 0; i < alerts.length; i++) {
-            alertString.append(alerts[i]).append(i < alerts.length - 1 ? "," : "");
+            alertString.append(alerts[i]);
+
+            if (i < alerts.length - 1) {
+                alertString.append(",");
+            }
         }
+
         request.setAttribute("alertData", alertString.toString());
 
         request.getRequestDispatcher("analytics.jsp").forward(request, response);
     }
 
-    // 2. HANDLE BUTTON CLICKS (Add / Delete)
-    // ... inside doPost ...
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -56,7 +65,6 @@ public class AnalyticsServlet extends HttpServlet {
         AnalyticsDAO dao = new AnalyticsDAO();
 
         if ("delete".equals(action)) {
-            // 🆕 Parse ID instead of Timestamp
             int id = Integer.parseInt(request.getParameter("id"));
             dao.deleteReading(id);
         } else if ("prune".equals(action)) {
