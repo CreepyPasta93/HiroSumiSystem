@@ -1,4 +1,4 @@
-# 🐾 HiroSumi System – AI-Enhanced Smart Stray Cat Shelter 🍓🍵
+# 🐾 HiroSumi System – Smart Stray Cat Shelter 🍓🍵
 
 HiroSumi is an IoT-based smart stray cat shelter designed to provide a safer, more comfortable, and climate-aware environment for stray cats. The system combines real-time sensor monitoring, automated actuator control, AI-assisted environmental analysis, and a full-stack web dashboard developed using Java JSP, Servlets, MySQL, and MicroPython.
 
