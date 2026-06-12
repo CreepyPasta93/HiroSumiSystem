@@ -10,9 +10,32 @@
         return;
     }
 
+    String userRole = currentUser.getRole();
+    boolean isTechnician = userRole != null && userRole.equalsIgnoreCase("Technician");
+
     Double avgTemp = request.getAttribute("avgTemp") != null ? (Double) request.getAttribute("avgTemp") : 0.0;
     Double avgHum = request.getAttribute("avgHum") != null ? (Double) request.getAttribute("avgHum") : 0.0;
-    String runtime = request.getAttribute("heaterRuntime") != null ? (String) request.getAttribute("heaterRuntime") : "0h 0m";
+    String fanRuntime = request.getAttribute("fanRuntime") != null ? (String) request.getAttribute("fanRuntime") : "0h 0m";
+
+    Integer comfortScore = request.getAttribute("comfortScore") != null ? (Integer) request.getAttribute("comfortScore") : 0;
+
+    String heatRiskLevel = request.getAttribute("heatRiskLevel") != null
+            ? (String) request.getAttribute("heatRiskLevel")
+            : "Waiting for data";
+
+    String heatPatternInsight = request.getAttribute("heatPatternInsight") != null
+            ? (String) request.getAttribute("heatPatternInsight")
+            : "HiroSumi is still collecting enough data to detect heat patterns.";
+
+    String fanEffectivenessInsight = request.getAttribute("fanEffectivenessInsight") != null
+            ? (String) request.getAttribute("fanEffectivenessInsight")
+            : "Fan effectiveness analysis will appear once enough readings are available.";
+
+    Integer hotDays7Days = request.getAttribute("hotDays7Days") != null ? (Integer) request.getAttribute("hotDays7Days") : 0;
+
+    String peakHeatPeriod = request.getAttribute("peakHeatPeriod") != null
+            ? (String) request.getAttribute("peakHeatPeriod")
+            : "Not enough data";
 
     // We don't need 'alertData' anymore since we removed that chart!
     List<SensorData> dataList = (List<SensorData>) request.getAttribute("dataList");
@@ -21,16 +44,22 @@
             ? (String) request.getAttribute("aiInsight")
             : "HiroSumi is preparing the AI summary insight...";
 
+    String heatRiskData = request.getAttribute("heatRiskData") != null
+            ? (String) request.getAttribute("heatRiskData")
+            : "0,0,0,0,0,0,0";
+
 %>
 
 <!DOCTYPE html>
 <html>
     <head>
         <title>HiroSumi - Analytics</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/analytics.css">        
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
     </head>
@@ -175,7 +204,7 @@
                             </div>
 
                             <div class="ai-summary-copy">
-                                <h3>AI Summary Insights</h3>
+                                <h3>AI Shelter Health Analysis</h3>
                                 <p><%= aiInsight%></p>
                             </div>
                         </div>
@@ -195,6 +224,86 @@
 
                     </div>
 
+                    <div class="heat-risk-chart-card">
+                        <div class="heat-risk-chart-header">
+                            <div>
+                                <h3>
+                                    <i class="fa-solid fa-chart-column"></i>
+                                    7-Day Heat Risk Pattern
+                                </h3>
+                                <p>
+                                    Shows how many hot temperature readings were recorded each day.
+                                    This helps decide whether the shelter needs stronger ventilation or another fan.
+                                </p>
+                            </div>
+
+                            <div class="heat-risk-chart-badge">
+                                <i class="fa-solid fa-fire"></i>
+                                Historical Risk Graph
+                            </div>
+                        </div>
+
+                        <div class="heat-risk-chart-wrapper">
+                            <canvas id="heatRiskChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="decision-support-grid">
+
+                        <div class="decision-card comfort-decision-card">
+                            <div class="decision-card-top">
+                                <div class="decision-icon pink-icon">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                </div>
+                                <span class="decision-label">Comfort Score</span>
+                            </div>
+
+                            <div class="comfort-score-row">
+                                <div class="comfort-score-number"><%= comfortScore%></div>
+                                <div>
+                                    <div class="comfort-score-max">/100</div>
+                                    <div class="risk-pill"><%= heatRiskLevel%></div>
+                                </div>
+                            </div>
+
+                            <p>
+                                This score converts sensor readings into an easy comfort indicator so caretakers can quickly understand whether the shelter is safe, warm, or needs improvement.
+                            </p>
+                        </div>
+
+                        <div class="decision-card">
+                            <div class="decision-card-top">
+                                <div class="decision-icon green-icon">
+                                    <i class="fa-solid fa-temperature-high"></i>
+                                </div>
+                                <span class="decision-label">Heat Pattern Detection</span>
+                            </div>
+
+                            <div class="mini-metric-row">
+                                <span><strong><%= hotDays7Days%></strong> hot day(s)</span>
+                                <span><strong><%= peakHeatPeriod%></strong> peak period</span>
+                            </div>
+
+                            <p><%= heatPatternInsight%></p>
+                        </div>
+
+                        <div class="decision-card">
+                            <div class="decision-card-top">
+                                <div class="decision-icon yellow-icon">
+                                    <i class="fa-solid fa-fan"></i>
+                                </div>
+                                <span class="decision-label">Fan Effectiveness</span>
+                            </div>
+
+                            <div class="mini-metric-row">
+                                <span><strong><%= fanRuntime%></strong> fan runtime</span>
+                            </div>
+
+                            <p><%= fanEffectivenessInsight%></p>
+                        </div>
+
+                    </div>
+
                     <div class="crud-section">
                         <div class="table-header">
                             <div>
@@ -205,14 +314,25 @@
                                 <span style="font-size:0.8rem; color:#888;">
                                     View sensor history, readings, and cleanup records
                                 </span>
+
+                                <% if (!isTechnician) { %>
+                                <div class="archive-role-note">
+                                    <i class="fa-solid fa-lock"></i>
+                                    Cleanup tools are only available for technicians.
+                                </div>
+                                <% } %>
                             </div>
 
+
+
+                            <% if (isTechnician) { %>
                             <button 
                                 type="button" 
                                 class="btn-delete archive-prune-btn" 
                                 onclick="openDeleteModal('prune', null)">
                                 <i class="fa-solid fa-broom"></i> Prune Oldest 10
                             </button>
+                            <% } %>
                         </div>
 
                         <div class="table-scroll-wrapper">
@@ -301,6 +421,95 @@
                 const msgElement = document.getElementById('deleteMessage');
                 msgElement.innerText = (actionType === 'prune') ? "This will permanently delete the 10 oldest records." : "You are about to delete this single record permanently.";
                 document.getElementById('deleteModal').style.display = "flex";
+            }
+
+            const heatRiskRawData = "<%= heatRiskData%>";
+            const heatRiskValues = heatRiskRawData.split(",").map(Number);
+
+            const dayLabels = [];
+            const today = new Date();
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(today.getDate() - i);
+
+                const label = date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric"
+                });
+
+                dayLabels.push(label);
+            }
+
+            const heatRiskCanvas = document.getElementById("heatRiskChart");
+
+            if (heatRiskCanvas) {
+                new Chart(heatRiskCanvas, {
+                    type: "bar",
+                    data: {
+                        labels: dayLabels,
+                        datasets: [{
+                                label: "Hot readings",
+                                data: heatRiskValues,
+                                backgroundColor: "rgba(236, 93, 143, 0.55)",
+                                borderColor: "rgba(236, 93, 143, 1)",
+                                borderWidth: 2,
+                                borderRadius: 12,
+                                maxBarThickness: 58
+                            }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        family: "Quicksand",
+                                        weight: "bold"
+                                    },
+                                    color: "#557159"
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.raw + " hot reading(s)";
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: "#6d5a52",
+                                    font: {
+                                        family: "Quicksand",
+                                        weight: "bold"
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                precision: 0,
+                                ticks: {
+                                    stepSize: 1,
+                                    color: "#6d5a52",
+                                    font: {
+                                        family: "Quicksand",
+                                        weight: "bold"
+                                    }
+                                },
+                                grid: {
+                                    color: "rgba(85, 113, 89, 0.12)"
+                                }
+                            }
+                        }
+                    }
+                });
             }
         </script>
     </body>

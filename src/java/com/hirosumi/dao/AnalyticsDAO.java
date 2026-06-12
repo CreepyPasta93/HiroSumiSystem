@@ -7,15 +7,14 @@ import java.util.List;
 import java.util.Collections;
 
 /**
- * Data Access Object for HiroSumi IoT System.
- * Handles environmental data retrieval, analytics, and system logs.
+ * Data Access Object for HiroSumi IoT System. Handles environmental data
+ * retrieval, analytics, and system logs.
  */
 public class AnalyticsDAO {
 
     // ==========================================
     // 📊 SECTION 1: ANALYTICS WIDGETS (KPIs)
     // ==========================================
-    
     public double getAverageTemp() {
         double avg = 0.0;
         try (Connection con = DBConnection.getConnection()) {
@@ -82,7 +81,6 @@ public class AnalyticsDAO {
     // ==========================================
     // 📈 SECTION 2: DASHBOARD METHODS (Live Feed & Graphs)
     // ==========================================
-
     public SensorData getLatestReading() {
         SensorData data = null;
         try (Connection con = DBConnection.getConnection()) {
@@ -162,7 +160,6 @@ public class AnalyticsDAO {
     // ==========================================
     // 📝 SECTION 3: CRUD METHODS (For Analytics Page)
     // ==========================================
-
     public List<SensorData> getAllReadings() {
         List<SensorData> list = new ArrayList<>();
         try (Connection con = DBConnection.getConnection()) {
@@ -187,8 +184,8 @@ public class AnalyticsDAO {
     }
 
     /**
-     * CREATE: Add a new sensor entry. 
-     * 🛠️ FIX: Includes sensorId=1 to avoid NULL errors in phpMyAdmin.
+     * CREATE: Add a new sensor entry. 🛠️ FIX: Includes sensorId=1 to avoid
+     * NULL errors in phpMyAdmin.
      */
     public boolean addReading(double temp, double hum, double pres, int motion, int fanStatus) {
         try (Connection con = DBConnection.getConnection()) {
@@ -229,5 +226,182 @@ public class AnalyticsDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public int getTotalReadingsLast7Days() {
+        int count = 0;
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM environmentaldata "
+                    + "WHERE timestamp >= NOW() - INTERVAL 7 DAY";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
+    public int getHotReadingsLast7Days() {
+        int count = 0;
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM environmentaldata "
+                    + "WHERE temperature >= 30 "
+                    + "AND timestamp >= NOW() - INTERVAL 7 DAY";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
+    public int getHotDaysLast7Days() {
+        int days = 0;
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(DISTINCT DATE(timestamp)) FROM environmentaldata "
+                    + "WHERE temperature >= 30 "
+                    + "AND timestamp >= NOW() - INTERVAL 7 DAY";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                days = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return days;
+    }
+
+    public String getPeakHeatPeriod() {
+        String period = "Not enough data yet";
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT "
+                    + "CASE "
+                    + "WHEN HOUR(timestamp) BETWEEN 6 AND 11 THEN 'Morning' "
+                    + "WHEN HOUR(timestamp) BETWEEN 12 AND 16 THEN 'Afternoon' "
+                    + "WHEN HOUR(timestamp) BETWEEN 17 AND 20 THEN 'Evening' "
+                    + "ELSE 'Night' "
+                    + "END AS heatPeriod, "
+                    + "AVG(temperature) AS avgTemp "
+                    + "FROM environmentaldata "
+                    + "WHERE timestamp >= NOW() - INTERVAL 7 DAY "
+                    + "GROUP BY heatPeriod "
+                    + "ORDER BY avgTemp DESC "
+                    + "LIMIT 1";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                period = rs.getString("heatPeriod");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return period;
+    }
+
+    public String getFanRuntimeLast7Days() {
+        int minutes = 0;
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM environmentaldata "
+                    + "WHERE fan_status = 1 "
+                    + "AND timestamp >= NOW() - INTERVAL 7 DAY";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                minutes = rs.getInt(1) * 20;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return (minutes / 60) + "h " + (minutes % 60) + "m";
+    }
+
+    public int getFanOnButStillHotCount() {
+        int count = 0;
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM environmentaldata "
+                    + "WHERE fan_status = 1 "
+                    + "AND temperature >= 30 "
+                    + "AND timestamp >= NOW() - INTERVAL 7 DAY";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
+    public int[] getDailyHotReadingsLast7Days() {
+        int[] hotReadings = new int[7];
+
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT DATE(timestamp) AS readingDate, COUNT(*) AS hotCount "
+                    + "FROM environmentaldata "
+                    + "WHERE temperature >= 30 "
+                    + "AND timestamp >= CURDATE() - INTERVAL 6 DAY "
+                    + "GROUP BY DATE(timestamp) "
+                    + "ORDER BY readingDate ASC";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate startDate = today.minusDays(6);
+
+            while (rs.next()) {
+                java.sql.Date sqlDate = rs.getDate("readingDate");
+                java.time.LocalDate readingDate = sqlDate.toLocalDate();
+
+                int index = (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, readingDate);
+
+                if (index >= 0 && index < 7) {
+                    hotReadings[index] = rs.getInt("hotCount");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return hotReadings;
     }
 }

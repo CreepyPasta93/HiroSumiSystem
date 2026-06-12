@@ -1,151 +1,195 @@
 package com.hirosumi.service;
 
 import com.hirosumi.dao.DBConnection;
-import com.hirosumi.dao.SystemLogDAO; // 👈 New Import
+import com.hirosumi.dao.SystemLogDAO;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.Properties;
+import javax.servlet.ServletContext;
+import org.json.JSONObject;
 
 public class ThingSpeakFetcher {
 
-    // YOUR KEYS (Read Key)
-    private static final String CHANNEL_ID = "3228274";
-    private static final String READ_API_KEY = "UELEJEDGB6Q6AZJZ";
+    private String getConfigValue(ServletContext context, String key) {
+        Properties config = new Properties();
 
-    public void fetchAndSaveData() {
+        try (InputStream input = context.getResourceAsStream("/WEB-INF/config.properties")) {
+
+            if (input == null) {
+                System.out.println("❌ ThingSpeakFetcher: /WEB-INF/config.properties not found.");
+                return null;
+            }
+
+            config.load(input);
+            return config.getProperty(key);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean fetchAndSaveData(ServletContext context, boolean sendTelegramAlert) {
         try {
             System.out.println("--- Starting ThingSpeak Sync ---");
-            
-            // 1. Construct URL
-            String urlString = "https://api.thingspeak.com/channels/" + CHANNEL_ID
-                    + "/feeds/last.json?api_key=" + READ_API_KEY;
+
+            String channelId = getConfigValue(context, "THINGSPEAK_CHANNEL_ID");
+            String readApiKey = getConfigValue(context, "THINGSPEAK_READ_API_KEY");
+
+            if (channelId == null || channelId.trim().isEmpty()
+                    || readApiKey == null || readApiKey.trim().isEmpty()) {
+                System.out.println("❌ ThingSpeak channel ID or read API key is missing in config.properties.");
+                return false;
+            }
+
+            String urlString = "https://api.thingspeak.com/channels/" + channelId.trim()
+                    + "/feeds/last.json?api_key=" + readApiKey.trim();
+
+            System.out.println("ThingSpeak URL: " + urlString.replace(readApiKey.trim(), "****"));
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
 
-            // 2. Read Response
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
+            int responseCode = conn.getResponseCode();
+            System.out.println("ThingSpeak Response Code: " + responseCode);
+
+            BufferedReader reader;
+
+            if (responseCode >= 200 && responseCode < 300) {
+                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            }
+
             StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
+            String inputLine;
+
+            while ((inputLine = reader.readLine()) != null) {
                 content.append(inputLine);
             }
-            in.close();
+
+            reader.close();
 
             String json = content.toString();
-            System.out.println("Received from Cloud: " + json); 
+            System.out.println("Received from ThingSpeak: " + json);
 
-            // 3. Parse Data
-            // Field 1=Temp, Field 2=Hum, Field 3=Press, Field 4=Motion
-            double temp = parseValueSafe(json, "field1");
-            double humidity = parseValueSafe(json, "field2");
-            double pressure = parseValueSafe(json, "field3");
-            double motion = parseValueSafe(json, "field4"); 
-
-            // 4. Save to Database & Check Alerts
-            if (temp != 0.0) {
-                 saveToDB(temp, humidity, pressure, (int) motion);
-                 
-                 // 🚀 NEW: Trigger the Intelligence Logic!
-                 checkAndSendAlerts(temp);
-                 
-            } else {
-                System.out.println("Skipping DB save: Data invalid or empty.");
+            if (responseCode < 200 || responseCode >= 300) {
+                System.out.println("❌ ThingSpeak request failed.");
+                return false;
             }
 
+            JSONObject obj = new JSONObject(json);
+
+            double temp = parseField(obj, "field1");
+            double humidity = parseField(obj, "field2");
+            double pressure = parseField(obj, "field3");
+            int motion = (int) parseField(obj, "field4");
+
+            /*
+             * If your ThingSpeak channel has fan status in field5, this will use it.
+             * If not, fanStatus will stay 0.
+             */
+            int fanStatus = (int) parseField(obj, "field5");
+
+            if (temp != 0.0) {
+                boolean saved = saveToDB(temp, humidity, pressure, motion, fanStatus);
+
+                if (saved && sendTelegramAlert) {
+                    checkAndSendAlerts(context, temp);
+                } else if (saved) {
+                    System.out.println("ThingSpeak data saved without Telegram alert.");
+                }
+
+                return saved;
+            }
+
+            System.out.println("Skipping DB save: temperature is 0.0 or field1 is empty.");
+            return false;
+
         } catch (Exception e) {
-            System.out.println("Error syncing with ThingSpeak: " + e.getMessage());
+            System.out.println("❌ Error syncing with ThingSpeak: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 
-    // --- 🚨 NEW ALERT LOGIC ---
-    private void checkAndSendAlerts(double currentTemp) {
-        // Define Limits
+    private double parseField(JSONObject obj, String fieldName) {
+        try {
+            if (!obj.has(fieldName) || obj.isNull(fieldName)) {
+                return 0.0;
+            }
+
+            String value = obj.optString(fieldName, "0");
+
+            if (value == null || value.trim().isEmpty() || value.equalsIgnoreCase("null")) {
+                return 0.0;
+            }
+
+            return Double.parseDouble(value.trim());
+
+        } catch (Exception e) {
+            System.out.println("Could not parse " + fieldName + ". Using 0.0");
+            return 0.0;
+        }
+    }
+
+    private void checkAndSendAlerts(ServletContext context, double currentTemp) {
         double MAX_TEMP = 30.0;
         double MIN_TEMP = 20.0;
-        
-        SystemLogDAO logDao = new SystemLogDAO(); // Used to save the alert to history
+
+        SystemLogDAO logDao = new SystemLogDAO();
 
         if (currentTemp > MAX_TEMP) {
-            // 1. Send Telegram
             String msg = "🔥 HIGH TEMP ALERT: " + currentTemp + "°C! Please check the shelter.";
-            TelegramNotifier.sendAlert(msg);
-            
-            // 2. Log to System Logs Page
+            TelegramNotifier.sendAlert(context, msg);
+
             logDao.insertLog("DHT22", "ALERT", "Temp exceeded limit (" + currentTemp + "°C)", "Critical");
             System.out.println("⚠️ SENT HIGH TEMP ALERT");
-            
+
         } else if (currentTemp < MIN_TEMP) {
-            // 1. Send Telegram
             String msg = "❄️ LOW TEMP ALERT: " + currentTemp + "°C! Heater needed.";
-            TelegramNotifier.sendAlert(msg);
-            
-            // 2. Log to System Logs Page
+            TelegramNotifier.sendAlert(context, msg);
+
             logDao.insertLog("DHT22", "ALERT", "Temp dropped below limit (" + currentTemp + "°C)", "Warning");
             System.out.println("⚠️ SENT LOW TEMP ALERT");
         }
     }
 
-    // --- EXISTING HELPERS ---
-
-    // Safer parser that handles "null" or missing quotes
-    private double parseValueSafe(String json, String key) {
-        try {
-            String searchKey = "\"" + key + "\":";
-            int startIndex = json.indexOf(searchKey);
-            if (startIndex == -1) return 0.0;
-            
-            startIndex += searchKey.length();
-            
-            // Skip quotes or spaces
-            while (startIndex < json.length() && (json.charAt(startIndex) == '"' || json.charAt(startIndex) == ' ')) {
-                startIndex++;
-            }
-            
-            int endIndex = startIndex;
-            // Stop at quote, comma, or closing brace
-            while (endIndex < json.length() && json.charAt(endIndex) != '"' && json.charAt(endIndex) != ',' && json.charAt(endIndex) != '}') {
-                endIndex++;
-            }
-            
-            String value = json.substring(startIndex, endIndex);
-            if (value.equals("null")) return 0.0;
-            
-            return Double.parseDouble(value);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    private void saveToDB(double temp, double humidity, double pressure, int motion) {
+    private boolean saveToDB(double temp, double humidity, double pressure, int motion, int fanStatus) {
         String sql = "INSERT INTO environmentaldata "
-                + "(temperature, humidity, pressure, motionStatus, sensorId, timestamp) "
-                + "VALUES (?, ?, ?, ?, 1, NOW())";
+                + "(temperature, humidity, pressure, motionStatus, fan_status, sensorId, timestamp) "
+                + "VALUES (?, ?, ?, ?, ?, 1, NOW())";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setDouble(1, temp);
             ps.setDouble(2, humidity);
             ps.setDouble(3, pressure);
-            ps.setInt(4, motion); 
-            
+            ps.setInt(4, motion);
+            ps.setInt(5, fanStatus);
+
             int rows = ps.executeUpdate();
-            
-            if(rows > 0) {
-                System.out.println("✅ SUCCESS: Saved to DB (T:" + temp + " M:" + motion + ")");
-            } else {
-                System.out.println("❌ ERROR: DB Insert failed (No rows affected)");
+
+            if (rows > 0) {
+                System.out.println("✅ SUCCESS: Saved to DB (T:" + temp + " H:" + humidity + " P:" + pressure + " M:" + motion + " Fan:" + fanStatus + ")");
+                return true;
             }
+
+            System.out.println("❌ ERROR: DB Insert failed. No rows affected.");
+            return false;
 
         } catch (Exception e) {
             System.out.println("❌ DB ERROR: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 }

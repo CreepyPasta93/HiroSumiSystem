@@ -96,8 +96,8 @@ public class ThresholdServlet extends HttpServlet {
         }
 
         // C. Send Notification
-        boolean success = TelegramNotifier.sendAlert(msg.toString());
-
+        boolean success = TelegramNotifier.sendAlert(getServletContext(), msg.toString());
+        
         // D. Log to System History
         // 🐾 FIX 2: Changed to "Volunteer Panel" for accurate system logging
         SystemLogDAO logDao = new SystemLogDAO();

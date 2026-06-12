@@ -13,25 +13,36 @@ import javax.servlet.http.HttpSession;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String user = request.getParameter("username");
         String pass = request.getParameter("password");
-        String role = request.getParameter("role"); // Getting the toggle value
+        String role = request.getParameter("role");
 
         UserDAO dao = new UserDAO();
+
+        // Check if account exists but email is not verified
+        if (dao.isUsernameExists(user) && !dao.isUserVerified(user)) {
+            request.setAttribute("errorMessage", "Please verify your email before logging in.");
+            request.getRequestDispatcher("login.jsp").forward(request, response);
+            return;
+        }
+
         User userObj = dao.authenticateUser(user, pass, role);
 
         if (userObj != null) {
-            // Login Success
             HttpSession session = request.getSession();
             session.setAttribute("currentUser", userObj);
 
-            // Redirect based on role (optional, or just go to dashboard)
-            response.sendRedirect("DashboardServlet"); 
+            if (userObj.isMustChangePassword()) {
+                response.sendRedirect("forceChangePassword.jsp");
+            } else {
+                response.sendRedirect("DashboardServlet");
+            }
+
         } else {
-            // Login Failed
             request.setAttribute("errorMessage", "Invalid Credentials or Role Selection");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }

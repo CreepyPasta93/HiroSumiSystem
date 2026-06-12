@@ -280,10 +280,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 
 /* --- 🌿 MAIN DASHBOARD BACKGROUND --- */
 .main-content {
-    height: 100vh;
-    padding: 14px 32px 14px;
+    min-height: 100vh;
+    height: auto;
+    padding: 14px 32px 40px;
     background: #fff8ef;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
 }
 
@@ -305,12 +307,22 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 .dashboard-layout {
     position: relative;
     z-index: 2;
-    padding: 10px 28px 0;
+    padding: 10px 28px 40px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    height: calc(100vh - 90px);
-    overflow: hidden;
+    gap: 22px;
+    min-height: calc(100vh - 90px);
+    height: auto;
+    overflow: visible;
+}
+
+.chart-box {
+    width: 100%;
+    height: 260px;
+    min-height: 260px;
+    max-height: 260px;
+    position: relative;
+    flex: none;
 }
 /* ============================= */
 /* CUTE DASHBOARD HEADER */
@@ -447,75 +459,245 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     transform: translateY(-2px);
 }
 
+/* ============================= */
+/* 🍓 CUTE STATUS MODAL */
+/* ============================= */
+
 .modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(62, 39, 35, 0.5); /* Dim Background */
+    inset: 0;
+    background: rgba(62, 39, 35, 0.42);
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(5px);
+    padding: 20px;
 }
-.modal-content {
-    background-color: #FFF8F0;
-    padding: 30px;
-    border-radius: 20px;
-    width: 350px;
-    border: 3px solid #F8BBD0;
+
+.cute-status-modal {
+    width: 390px;
+    max-width: calc(100vw - 34px);
+    background:
+        radial-gradient(circle at top left, rgba(255, 198, 213, 0.45), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(137, 182, 109, 0.20), transparent 32%),
+        #fff8ef;
+    border: 3px solid #f8bbd0;
+    border-radius: 30px;
+    padding: 34px 30px 28px;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    animation: popIn 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 22px 45px rgba(62, 39, 35, 0.22),
+        0 0 0 8px rgba(255, 255, 255, 0.35);
+    animation: cutePopIn 0.34s ease;
 }
-@keyframes popIn {
-    from {
-        transform: scale(0.8);
+
+.cute-status-modal::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: -8px;
+    height: 92px;
+    background-image: url("../images/dashboard-field.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: bottom center;
+    opacity: 0.38;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.cute-status-modal > * {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes cutePopIn {
+    0% {
+        transform: translateY(18px) scale(0.88);
         opacity: 0;
     }
-    to {
-        transform: scale(1);
+    70% {
+        transform: translateY(-3px) scale(1.02);
         opacity: 1;
     }
+    100% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-x-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid #f3b6c7;
+    border-radius: 50%;
+    background: rgba(255, 250, 244, 0.88);
+    color: #d85c7d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s ease;
+}
+
+.modal-x-btn:hover {
+    background: #ffe1e9;
+    transform: rotate(8deg) scale(1.05);
+}
+
+.modal-deco {
+    position: absolute;
+    font-size: 1.35rem;
+    opacity: 0.8;
+    filter: drop-shadow(0 4px 8px rgba(62, 39, 35, 0.12));
+}
+
+.modal-strawberry {
+    left: 26px;
+    top: 24px;
+    transform: rotate(-12deg);
+}
+
+.modal-paw {
+    right: 54px;
+    bottom: 26px;
+    transform: rotate(15deg);
+}
+
+.modal-cat-bubble {
+    width: 78px;
+    height: 78px;
+    margin: 2px auto 16px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #e8f6e8, #ffffff);
+    border: 3px solid rgba(137, 182, 109, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 22px rgba(85, 113, 89, 0.18);
+}
+
+.modal-cat-bubble i {
+    font-size: 2.6rem;
+    color: #66bb6a;
+}
+
+.cute-status-modal h3 {
+    margin: 0 0 10px;
+    color: #2e7d32;
+    font-family: 'Comic Neue', 'Quicksand', cursive;
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
+.cute-status-modal p {
+    color: #6b5046;
+    margin: 0 auto;
+    font-size: 0.96rem;
+    line-height: 1.45;
+    max-width: 300px;
+    font-weight: 600;
+}
+
+.modal-mini-note {
+    margin: 18px auto 18px;
+    max-width: 310px;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1.5px dashed rgba(216, 92, 125, 0.32);
+    color: #557159;
+    border-radius: 18px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.modal-mini-note i {
+    color: #d85c7d;
 }
 
 .btn-close-modal {
     background: #557159;
-    color: white;
+    color: #fffaf4;
     border: none;
-    padding: 10px 25px;
-    border-radius: 20px;
-    font-weight: bold;
+    padding: 11px 28px;
+    border-radius: 999px;
+    font-weight: 900;
     cursor: pointer;
-    margin-top: 15px;
+    font-family: 'Quicksand', sans-serif;
+    box-shadow: 0 10px 18px rgba(85, 113, 89, 0.20);
+    transition: 0.25s ease;
 }
+
 .btn-close-modal:hover {
-    background: #33691E;
+    background: #456247;
+    transform: translateY(-2px);
+}
+
+.btn-close-modal span {
+    color: #ffd6e1;
+}
+
+/* Failed modal variation */
+.cute-status-modal.error-mode .modal-cat-bubble {
+    background: linear-gradient(145deg, #ffe8ee, #ffffff);
+    border-color: rgba(216, 92, 125, 0.35);
+}
+
+.cute-status-modal.error-mode .modal-cat-bubble i {
+    color: #ef5350;
+}
+
+.cute-status-modal.error-mode h3 {
+    color: #c94c71;
+}
+
+.cute-status-modal.error-mode .btn-close-modal {
+    background: #d85c7d;
 }
 
 .row-hero {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
     gap: 24px;
-    height: 58%;
-    min-height: 0;
+    height: auto;
+    min-height: 410px;
+    align-items: stretch;
 }
 
 .row-status {
     display: grid;
     grid-template-columns: 1.1fr 1fr 1.15fr 1fr;
     gap: 22px;
-    height: 32%;
-    min-height: 0;
+    height: auto;
+    min-height: 210px;
 }
 
 .hero-graph-container {
-    min-height: 0;
+    background: rgba(255, 248, 240, 0.92);
+    border: 2px solid #F8BBD0;
+    border-radius: 24px;
+    padding: 24px 28px;
+    min-height: 360px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .hero-graph-container canvas {
-    max-height: 285px !important;
+    width: 100% !important;
+    height: 260px !important;
+    max-height: 260px !important;
 }
 
 /* ============================= */
@@ -647,6 +829,254 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     box-shadow: 0 4px 10px rgba(216, 27, 96, 0.08);
 }
 
+/* ============================= */
+/* 🔔 NOTIFICATION HISTORY PANEL */
+/* ============================= */
+
+.notification-panel {
+    position: fixed;
+    top: 92px;
+    right: 48px;
+    width: 390px;
+    max-width: calc(100vw - 32px);
+    background:
+        radial-gradient(circle at top left, rgba(255, 198, 213, 0.36), transparent 36%),
+        #fff8ef;
+    border: 2.5px solid #f8bbd0;
+    border-radius: 26px;
+    box-shadow: 0 18px 36px rgba(62, 39, 35, 0.18);
+    z-index: 1600;
+    padding: 18px;
+    display: none;
+}
+
+.notification-panel.active {
+    display: block;
+    animation: notificationDrop 0.25s ease;
+}
+
+@keyframes notificationDrop {
+    from {
+        transform: translateY(-8px) scale(0.98);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.notification-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1.5px dashed rgba(216, 92, 125, 0.28);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.notification-panel-header h3 {
+    margin: 0;
+    color: #3e2723;
+    font-family: 'Comic Neue', 'Quicksand', cursive;
+    font-size: 1.25rem;
+    font-weight: 900;
+}
+
+.notification-panel-header p {
+    margin: 3px 0 0;
+    color: #8d6e63;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.notification-panel-header button {
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid #f3b6c7;
+    border-radius: 50%;
+    background: #fffaf4;
+    color: #d85c7d;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.notification-panel-header button:hover {
+    background: #ffe1e9;
+    transform: rotate(8deg) scale(1.05);
+}
+
+/* Notification list */
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 390px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #f3b6c7;
+    border-radius: 999px;
+}
+
+.notification-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1.5px solid rgba(216, 92, 125, 0.14);
+    transition: 0.25s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e8f6e8;
+    color: #66bb6a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-item.failed .notification-icon {
+    background: #ffe8ee;
+    color: #ef5350;
+}
+
+.notification-item.partial .notification-icon {
+    background: #fff5d9;
+    color: #e9a23b;
+}
+
+.notification-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-main-title {
+    color: #3e2723;
+    font-weight: 900;
+    font-size: 0.86rem;
+    min-width: 0;
+}
+
+.notification-status-pill {
+    color: #557159;
+    font-size: 0.68rem;
+    background: rgba(85, 113, 89, 0.12);
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notification-item.sent .notification-status-pill {
+    color: #557159;
+    background: rgba(85, 113, 89, 0.12);
+}
+
+.notification-item.failed .notification-status-pill {
+    color: #c94c71;
+    background: rgba(216, 92, 125, 0.12);
+}
+
+.notification-item.partial .notification-status-pill {
+    color: #b67b20;
+    background: rgba(233, 162, 59, 0.14);
+}
+
+.notification-info p {
+    display: block;
+    margin: 4px 0 4px;
+    color: #6b5046;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    font-weight: 600;
+}
+
+.notification-info small {
+    display: block;
+    color: #9b8275;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.notification-empty {
+    text-align: center;
+    padding: 24px 12px;
+    color: #8d6e63;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.notification-empty.error {
+    color: #c94c71;
+}
+
+/* Phone notification panel */
+@media (max-width: 520px) {
+    .notification-panel {
+        top: 92px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+        padding: 15px;
+        border-radius: 22px;
+    }
+
+    .notification-list {
+        max-height: 330px;
+    }
+
+    .notification-item {
+        padding: 11px;
+        gap: 10px;
+    }
+
+    .notification-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .notification-main-title {
+        font-size: 0.82rem;
+    }
+
+    .notification-status-pill {
+        font-size: 0.62rem;
+        padding: 3px 7px;
+    }
+
+    .notification-info p {
+        font-size: 0.74rem;
+    }
+
+    .notification-info small {
+        font-size: 0.66rem;
+    }
+}
 /* ============================= */
 /* OCCUPANCY CARD */
 /* ============================= */
@@ -1126,25 +1556,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     pointer-events: none;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .row-hero {
-        flex-direction: column;
-        min-height: auto;
-    }
-
-    .row-status {
-        grid-template-columns: 1fr;
-        min-height: auto;
-    }
-
-    .hero-graph-container,
-    .hero-live-card,
-    .dash-card {
-        width: 100% !important;
-    }
-}
-
 /* --- 🌿 ATMOSPHERE AESTHETIC UPGRADES --- */
 .atmosphere-value-container {
     display: flex;
@@ -1208,5 +1619,487 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     100% {
         transform: scale(0.95);
         box-shadow: 0 0 0 0 rgba(129, 199, 132, 0);
+    }
+}
+
+/* ========================================= */
+/* 📱 DASHBOARD RESPONSIVE PATCH             */
+/* ========================================= */
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+}
+
+/* Let dashboard scroll on smaller screens */
+@media (max-width: 1200px) {
+    .main-content {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 14px 22px 40px;
+    }
+
+    .dashboard-layout {
+        height: auto;
+        min-height: calc(100vh - 90px);
+        overflow: visible;
+        padding: 10px 18px 40px;
+    }
+
+    .row-hero {
+        height: auto;
+        min-height: 420px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .row-status {
+        height: auto;
+        min-height: unset;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .chart-box {
+        height: 280px;
+        min-height: 280px;
+        max-height: 280px;
+    }
+
+    .hero-graph-container canvas {
+        height: 280px !important;
+        max-height: 280px !important;
+    }
+}
+
+/* Graph header classes */
+.graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.graph-title-box h2 {
+    font-family: 'Comic Neue', cursive;
+    margin: 0;
+    font-size: 2rem;
+    color: #3E2723;
+}
+
+.graph-title-box span {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.graph-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255,255,255,0.5);
+    padding: 7px 15px;
+    border-radius: 20px;
+    flex-wrap: wrap;
+}
+
+.graph-controls label {
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.graph-controls button {
+    border: none;
+    background: #fff8f0;
+    cursor: pointer;
+    color: #557159;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.graph-controls {
+    box-shadow: 0 8px 18px rgba(216, 92, 125, 0.06);
+}
+
+.graph-controls input[type="checkbox"] {
+    accent-color: #d85c7d;
+}
+
+.graph-controls button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .main-content {
+        padding: 12px 16px 36px;
+    }
+
+    .dashboard-header {
+        padding: 0 12px 12px 64px;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .header-greeting h1 {
+        font-size: 1.28rem;
+    }
+
+    .header-greeting p {
+        font-size: 0.78rem;
+    }
+
+    .header-actions {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .header-date-box {
+        min-width: 118px;
+        height: 42px;
+        padding: 0 10px;
+    }
+
+    .header-bell-btn,
+    .header-send-btn {
+        height: 42px;
+    }
+
+    .header-bell-btn {
+        width: 42px;
+    }
+
+    .header-send-btn {
+        padding: 0 13px;
+        font-size: 0.78rem;
+    }
+
+    .dashboard-layout {
+        padding: 10px 6px 36px;
+        gap: 16px;
+    }
+
+    .row-hero {
+        min-height: unset;
+    }
+
+    .hero-graph-container {
+        min-height: 380px;
+        padding: 18px !important;
+    }
+
+    .chart-box {
+        height: 280px;
+    }
+
+    .graph-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .graph-title-box h2 {
+        font-size: 1.55rem;
+    }
+
+    .graph-controls {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    .row-status {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-card,
+    .actuator-card,
+    .occupancy-card,
+    .uptime-card,
+    .data-sync-card,
+    .live-atmosphere-card {
+        min-height: 230px;
+    }
+
+    .live-atmosphere-card {
+        min-height: 320px;
+    }
+}
+
+/* Phone */
+@media (max-width: 520px) {
+    /* ============================= */
+    /* Mobile Header Layout          */
+    /* ============================= */
+
+    .main-content {
+        padding: 10px 12px 30px;
+    }
+
+    /* Keep menu button floating properly */
+    .sidebar-open-btn {
+        position: fixed;
+        top: 12px;
+        left: 14px;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        font-size: 1rem;
+        z-index: 1200;
+    }
+
+    /* Header should NOT use grid with menu because menu is outside header.jsp */
+    .dashboard-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+
+        padding: 8px 0 14px 54px;
+        min-height: auto;
+    }
+
+    /* Greeting sits beside the menu button */
+    .header-greeting {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .header-greeting h1 {
+        font-size: 1rem;
+        line-height: 1.15;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-greeting p {
+        font-size: 0.68rem;
+        line-height: 1.15;
+        margin: 2px 0 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Date, bell, send row */
+    .header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 42px 42px;
+        gap: 8px;
+        align-items: center;
+        margin-top: 0;
+    }
+
+    /* Date box fills remaining space */
+    .header-date-box {
+        width: 100%;
+        min-width: 0;
+        height: 42px;
+        padding: 0 11px;
+        box-sizing: border-box;
+    }
+
+    .header-date-box i {
+        font-size: 1rem;
+    }
+
+    .header-date-box strong {
+        display: block;
+        font-size: 0.72rem;
+        line-height: 1.05;
+    }
+
+    .header-date-box span {
+        display: block;
+        font-size: 0.72rem;
+        line-height: 1.05;
+        margin-top: 3px;
+    }
+
+    /* Bell and send become compact square buttons */
+    .header-bell-btn,
+    .header-send-btn {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        padding: 0;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .header-bell-btn {
+        position: relative;
+        font-size: 1rem;
+    }
+
+    /* Notification dot fixed on mobile */
+    .bell-dot {
+        top: 9px;
+        right: 9px;
+        width: 8px;
+        height: 8px;
+        border: 2px solid #fffaf4;
+        box-sizing: border-box;
+    }
+
+    .header-send-btn {
+        font-size: 0.95rem;
+    }
+
+    .header-send-btn span {
+        display: none;
+    }
+
+    /* ============================= */
+    /* Dashboard layout              */
+    /* ============================= */
+
+    .dashboard-layout {
+        padding: 10px 0 28px;
+    }
+
+    .row-hero {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        min-height: unset;
+    }
+
+    .row-status {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Graph card */
+    .hero-graph-container {
+        min-height: 360px;
+        border-radius: 20px !important;
+        padding: 15px !important;
+    }
+
+    .graph-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .graph-title-box h2 {
+        font-size: 1.35rem;
+    }
+
+    .graph-title-box span {
+        font-size: 0.75rem;
+    }
+
+    .graph-controls {
+        width: 100%;
+        border-radius: 16px;
+        gap: 8px;
+        padding: 8px 10px;
+        justify-content: space-between;
+    }
+
+    .graph-controls label {
+        font-size: 0.72rem;
+    }
+
+    .graph-controls button {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+    }
+
+    .chart-box {
+        height: 230px;
+        min-height: 230px;
+        max-height: 230px;
+    }
+
+    .hero-graph-container canvas {
+        height: 230px !important;
+        max-height: 230px !important;
+    }
+
+    /* Live Atmosphere */
+    .main-temp {
+        font-size: 3rem;
+    }
+
+    .temp-unit {
+        font-size: 1.1rem;
+    }
+
+    .live-atmosphere-card {
+        min-height: 310px;
+        padding: 18px;
+    }
+
+    .comfort-card {
+        padding: 13px 14px;
+    }
+
+    .comfort-desc {
+        font-size: 0.78rem;
+    }
+
+    /* Actuator */
+    .actuator-icons {
+        gap: 14px;
+    }
+
+    .actuator-circle {
+        width: 46px;
+        height: 46px;
+    }
+
+    .actuator-main {
+        width: 54px;
+        height: 54px;
+    }
+
+    .actuator-circle i {
+        font-size: 1.25rem;
+    }
+
+    .actuator-main i {
+        font-size: 1.55rem;
+    }
+
+    /* Occupancy */
+    .occupancy-paws {
+        font-size: 2.35rem;
+        gap: 12px;
+    }
+
+    /* Uptime */
+    .uptime-clock {
+        font-size: 1.55rem;
+        letter-spacing: 1px;
+    }
+
+    /* Data Sync */
+    .sync-time,
+    .sync-next-time {
+        font-size: 1.25rem;
+    }
+
+    /* Modal */
+    .modal-content {
+        width: calc(100% - 36px);
+        padding: 24px 18px;
     }
 }

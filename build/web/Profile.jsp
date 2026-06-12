@@ -1,4 +1,5 @@
 <%@page import="com.hirosumi.model.User"%>
+<%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
@@ -11,15 +12,24 @@
     String mode = request.getParameter("mode");
     boolean isEditMode = "edit".equals(mode);
 
+    boolean isTechnician = currentUser.getRole() != null
+            && currentUser.getRole().equalsIgnoreCase("Technician");
+
+    List<User> userList = (List<User>) request.getAttribute("userList");
+
     String avatarUrl = (currentUser.getProfileImage() != null && !currentUser.getProfileImage().trim().isEmpty())
             ? request.getContextPath() + "/images/" + currentUser.getProfileImage().trim()
             : request.getContextPath() + "/images/default-profile.jpg";
+
+    String roleSuccess = request.getParameter("roleSuccess");
+    String roleError = request.getParameter("roleError");
 %>
 
 <!DOCTYPE html>
 <html>
     <head>
         <title>HiroSumi - Settings</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
@@ -39,7 +49,7 @@
 
         <div class="dashboard-container">
 
-            <% request.setAttribute("activePage", "profile"); %>
+            <% request.setAttribute("activePage", "profile");%>
             <jsp:include page="sidebar.jsp" />
 
             <div class="main-content">
@@ -195,6 +205,7 @@
                                 </div>
                                 <% }%>
                             </form>
+
                             <img
                                 src="${pageContext.request.contextPath}/images/wave-cat.png"
                                 alt="Cute waving cat"
@@ -219,7 +230,9 @@
                                         <i class="fa-solid fa-medal"></i>
                                         <div>
                                             <div style="font-weight: bold;">Level</div>
-                                            <div style="font-size: 0.8rem; opacity: 0.85;"><%= currentUser.getRole()%></div>
+                                            <div style="font-size: 0.8rem; opacity: 0.85;">
+                                                <%= currentUser.getRole()%>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -301,6 +314,84 @@
                         </div>
                     </div>
 
+                    <!-- TECHNICIAN ONLY: USER ROLE MANAGEMENT -->
+                    <% if (isTechnician && userList != null) { %>
+                    <div class="role-management-card">
+                        <div class="role-management-header">
+                            <div>
+                                <h3>
+                                    <i class="fa-solid fa-user-shield"></i>
+                                    User Role Management
+                                </h3>
+                                <p>
+                                    Manage shelter access gently and safely by changing user roles between Volunteer and Technician only 🐾
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="role-table-wrapper">
+                            <table class="role-table">
+                                <thead>
+                                    <tr>
+                                        <th>Full Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Current Role</th>
+                                        <th>Change Role</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <% if (!userList.isEmpty()) { %>
+                                    <% for (User u : userList) {%>
+                                    <tr>
+                                        <td><%= u.getFullName()%></td>
+                                        <td><%= u.getUsername()%></td>
+                                        <td><%= u.getEmail()%></td>
+                                        <td>
+                                            <span class="role-pill <%= u.getRole() != null && u.getRole().equalsIgnoreCase("Technician") ? "role-tech" : "role-volunteer"%>">
+                                                <%= u.getRole()%>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (u.getUserId() != currentUser.getUserId()) {%>
+                                            <form action="UpdateUserRoleServlet" method="post" class="role-update-form">
+                                                <input type="hidden" name="userId" value="<%= u.getUserId()%>">
+
+                                                <select name="newRole" class="role-select">
+                                                    <option value="Volunteer" <%= u.getRole() != null && u.getRole().equalsIgnoreCase("Volunteer") ? "selected" : ""%>>
+                                                        Volunteer
+                                                    </option>
+                                                    <option value="Technician" <%= u.getRole() != null && u.getRole().equalsIgnoreCase("Technician") ? "selected" : ""%>>
+                                                        Technician
+                                                    </option>
+                                                </select>
+
+                                                <button type="submit" class="role-update-btn">
+                                                    Update
+                                                </button>
+                                            </form>
+                                            <% } else { %>
+                                            <span class="role-self-note">
+                                                Current user
+                                            </span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                    <% } else { %>
+                                    <tr>
+                                        <td colspan="5" style="text-align:center; padding:25px; color:#888;">
+                                            No users found.
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <% } %>
+
                 </div>
             </div>
         </div>
@@ -354,6 +445,45 @@
                             });
                         });
             }
+
+            <% if ("updated".equals(roleSuccess)) { %>
+            Swal.fire({
+                icon: 'success',
+                title: 'Role Updated!',
+                text: 'The user role has been updated successfully.',
+                confirmButtonColor: '#557159'
+            });
+            <% } %>
+
+            <% if ("unauthorized".equals(roleError)) { %>
+            Swal.fire({
+                icon: 'error',
+                title: 'Access Denied',
+                text: 'Only technicians can update user roles.',
+                confirmButtonColor: '#d85c7d'
+            });
+            <% } else if ("self".equals(roleError)) { %>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Action Not Allowed',
+                text: 'You cannot change your own role from this section.',
+                confirmButtonColor: '#d85c7d'
+            });
+            <% } else if ("failed".equals(roleError)) { %>
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: 'The role could not be updated. Please try again.',
+                confirmButtonColor: '#d85c7d'
+            });
+            <% } else if ("invalid".equals(roleError)) { %>
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Request',
+                text: 'The submitted role update request is invalid.',
+                confirmButtonColor: '#d85c7d'
+            });
+            <% }%>
         </script>
     </body>
 </html>

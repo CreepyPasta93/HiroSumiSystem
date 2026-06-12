@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -22,15 +23,10 @@ import javax.servlet.http.Part;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-/**
- * ProfileServlet handles profile updates, image uploads, and the password reset
- * email process using Jakarta/JavaMail.
- */
 @MultipartConfig
 @WebServlet("/ProfileServlet")
 public class ProfileServlet extends HttpServlet {
@@ -38,7 +34,18 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Standard forward to the profile page
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        loadUserListIfTechnician(request, currentUser);
+
         request.getRequestDispatcher("Profile.jsp").forward(request, response);
     }
 
@@ -47,27 +54,42 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("currentUser");
 
-        // Session validation
-        if (currentUser == null) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("currentUser") == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
+        User currentUser = (User) session.getAttribute("currentUser");
         UserDAO dao = new UserDAO();
 
         if ("update".equals(action)) {
             handleProfileUpdate(request, response, currentUser, dao, session);
         } else if ("resetPassword".equals(action)) {
             handlePasswordReset(request, response);
+        } else {
+            response.sendRedirect("ProfileServlet");
         }
     }
 
-    /**
-     * Updates user information and handles profile image uploads.
-     */
+    private void loadUserListIfTechnician(HttpServletRequest request, User currentUser) {
+        System.out.println("PROFILE DEBUG: loadUserListIfTechnician called");
+        System.out.println("PROFILE DEBUG: currentUser role = [" + currentUser.getRole() + "]");
+
+        if (currentUser.getRole() != null && currentUser.getRole().trim().equalsIgnoreCase("Technician")) {
+            UserDAO userDAO = new UserDAO();
+            java.util.List<User> users = userDAO.getAllUsers();
+
+            System.out.println("PROFILE DEBUG: users found = " + users.size());
+
+            request.setAttribute("userList", users);
+        } else {
+            System.out.println("PROFILE DEBUG: user is not technician");
+        }
+    }
+
     private void handleProfileUpdate(HttpServletRequest request, HttpServletResponse response,
             User currentUser, UserDAO dao, HttpSession session)
             throws ServletException, IOException {
@@ -104,12 +126,30 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("message", "Update failed.");
         }
 
+        loadUserListIfTechnician(request, currentUser);
+
         request.getRequestDispatcher("Profile.jsp").forward(request, response);
     }
 
-    /**
-     * Generates a token, saves it to the DB, and sends a reset email via Gmail.
-     */
+    private String getConfigValue(String key) {
+        Properties config = new Properties();
+
+        try (InputStream input = getServletContext().getResourceAsStream("/WEB-INF/config.properties")) {
+
+            if (input == null) {
+                System.out.println("config.properties not found in WEB-INF folder.");
+                return null;
+            }
+
+            config.load(input);
+            return config.getProperty(key);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void handlePasswordReset(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -117,55 +157,55 @@ public class ProfileServlet extends HttpServlet {
         String token = UUID.randomUUID().toString();
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
 
-        // 1. Save token to DB
         UserDAO dao = new UserDAO();
         dao.saveResetToken(recipientEmail, token, expiry);
 
-        // 2. SMTP Settings 
-        // Use the new account you created specifically for the project
         final String senderEmail = "hirosumi.official@gmail.com";
-        final String senderPassword = "joxg fnpb cftf ippc"; // The 16-digit App Password
-
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-
-        Session mailSession = Session.getInstance(props, new javax.mail.Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, senderPassword);
-            }
-        });
+        final String senderPassword = getConfigValue("HIROSUMI_EMAIL_APP_PASSWORD");
 
         boolean emailSent = false;
 
-        try {
-            // 3. Prepare Reset Link and HTML content
-            String resetLink = "http://localhost:8080/HiroSumiSystem/ResetPasswordServlet?token=" + token;
-            String htmlContent = "<h2>Password Reset</h2>"
-                    + "<p>You requested a password reset for HiroSumi.</p>"
-                    + "<p>This link will expire in 15 minutes.</p>"
-                    + "<a href='" + resetLink + "'>Click here to reset your password</a>";
+        if (senderPassword == null || senderPassword.trim().isEmpty()) {
+            System.out.println("Email app password is missing from config.properties.");
+        } else {
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.port", "587");
 
-            // 4. Create and Send Email
-            Message message = new MimeMessage(mailSession);
-            message.setFrom(InternetAddress.parse(senderEmail)[0]);
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
-            message.setSubject("HiroSumi - Password Reset Request");
-            message.setContent(htmlContent, "text/html");
+            javax.mail.Session mailSession = javax.mail.Session.getInstance(props, new javax.mail.Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(senderEmail, senderPassword);
+                }
+            });
 
-            Transport.send(message);
-            emailSent = true;
+            try {
+                String resetLink = "http://localhost:8080/HiroSumiSystem/ResetPasswordServlet?token=" + token;
 
-        } catch (MessagingException e) {
-            e.printStackTrace();
+                String htmlContent = "<h2>Password Reset</h2>"
+                        + "<p>You requested a password reset for HiroSumi.</p>"
+                        + "<p>This link will expire in 15 minutes.</p>"
+                        + "<a href='" + resetLink + "'>Click here to reset your password</a>";
+
+                Message message = new MimeMessage(mailSession);
+                message.setFrom(InternetAddress.parse(senderEmail)[0]);
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+                message.setSubject("HiroSumi - Password Reset Request");
+                message.setContent(htmlContent, "text/html");
+
+                Transport.send(message);
+                emailSent = true;
+
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
         }
 
-        // 5. Send JSON response back to SweetAlert in Profile.jsp
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+
         if (emailSent) {
             response.getWriter().write("{\"status\":\"success\"}");
         } else {

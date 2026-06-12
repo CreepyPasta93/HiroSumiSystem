@@ -359,7 +359,8 @@
 /* SENSOR ARCHIVE - CUTE VERSION */
 /* ============================= */
 
-.crud-section {
+.decision-support-grid + .crud-section{
+    margin-top: 8px;
     background: rgba(255, 248, 240, 0.97);
     border: 2px solid #557159;
     border-radius: 30px;
@@ -618,6 +619,249 @@
     }
 }
 
+.archive-role-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #fff2f6;
+    color: #d85c7d;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 800;
+    border: 1.5px solid #f7d7df;
+}
+
+/* ============================= */
+/* DECISION SUPPORT CARDS */
+/* ============================= */
+
+.decision-support-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 4px;
+}
+
+.decision-card {
+    background: rgba(255, 252, 251, 0.96);
+    border: 2px solid #f5dbe2;
+    border-radius: 26px;
+    padding: 22px 24px;
+    box-shadow: 0 10px 24px rgba(62, 39, 35, 0.04);
+    position: relative;
+    overflow: hidden;
+    min-height: 285px;
+    height: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.decision-card::after {
+    content: "🍓";
+    position: absolute;
+    right: 18px;
+    bottom: 12px;
+    font-size: 1.4rem;
+    opacity: 0.22;
+}
+
+.decision-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    min-height: 46px;
+}
+
+.decision-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.pink-icon {
+    background: #ffe8ef;
+    color: #e94e7e;
+}
+
+.green-icon {
+    background: #e8f3e4;
+    color: #557159;
+}
+
+.yellow-icon {
+    background: #fff2cc;
+    color: #c58b25;
+}
+
+.decision-label {
+    font-family: 'Comic Neue', 'Quicksand', sans-serif;
+    color: #3E2723;
+    font-size: 1.25rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.comfort-score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.comfort-score-number {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #e94e7e;
+}
+
+.comfort-score-max {
+    font-family: 'Quicksand', sans-serif;
+    color: #8b7b73;
+    font-weight: 900;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.risk-pill {
+    display: inline-flex;
+    margin-top: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #e8f3e4;
+    color: #557159;
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.mini-metric-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.mini-metric-row span {
+    background: #fff4f7;
+    color: #6d5a52;
+    border: 1.5px solid #f7d7df;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.mini-metric-row strong {
+    color: #e94e7e;
+}
+
+.decision-card p {
+    margin: 0;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #6d5a52;
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================= */
+/* 7-DAY HEAT RISK CHART */
+/* ============================= */
+
+.heat-risk-chart-card {
+    background: rgba(255, 252, 251, 0.96);
+    border: 2px solid #f5dbe2;
+    border-radius: 28px;
+    padding: 24px 28px 28px;
+    box-shadow: 0 10px 24px rgba(62, 39, 35, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.heat-risk-chart-card::after {
+    content: "🐾";
+    position: absolute;
+    right: 26px;
+    bottom: 18px;
+    font-size: 4rem;
+    opacity: 0.035;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.heat-risk-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 2;
+}
+
+.heat-risk-chart-header h3 {
+    margin: 0;
+    font-family: 'Comic Neue', 'Quicksand', sans-serif;
+    color: #3E2723;
+    font-size: 1.55rem;
+}
+
+.heat-risk-chart-header h3 i {
+    color: #ec5d8f;
+    margin-right: 8px;
+}
+
+.heat-risk-chart-header p {
+    margin: 7px 0 0;
+    font-family: 'Quicksand', sans-serif;
+    color: #8b7b73;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.5;
+    max-width: 700px;
+}
+
+.heat-risk-chart-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #ffe3eb;
+    color: #ec4d7f;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.heat-risk-chart-wrapper {
+    height: 260px;
+    background: rgba(255, 248, 240, 0.65);
+    border: 1.5px solid rgba(85, 113, 89, 0.12);
+    border-radius: 22px;
+    padding: 16px;
+    position: relative;
+    z-index: 2;
+}
+
 /* ============================= */
 /* RESPONSIVE */
 /* ============================= */
@@ -663,5 +907,304 @@
     .table-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .heat-risk-chart-header {
+        flex-direction: column;
+    }
+
+    .heat-risk-chart-badge {
+        font-size: 0.7rem;
+    }
+
+    .heat-risk-chart-wrapper {
+        height: 240px;
+    }
+}
+
+/* ============================= */
+/* PHONE POLISH FOR ANALYTICS */
+/* ============================= */
+
+@media (max-width: 520px) {
+    .analytics-page .main-content {
+        padding: 10px 12px 36px;
+        overflow-x: hidden;
+    }
+
+    .analytics-layout {
+        padding: 18px 0 120px;
+        gap: 18px;
+    }
+
+    /* Page title section */
+    .analytics-header-block {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        padding: 0 4px;
+        margin-bottom: 8px;
+    }
+
+    .analytics-title-wrap {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .analytics-title-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 15px;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .analytics-page-title {
+        font-size: 1.55rem;
+        line-height: 1.15;
+    }
+
+    .analytics-page-subtitle {
+        font-size: 0.8rem;
+        line-height: 1.35;
+        max-width: 270px;
+    }
+
+    /* Hide awkward cat on phone */
+    .analytics-box-cat {
+        display: none;
+    }
+
+    /* Main cards */
+    .analytics-main-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .analytics-column {
+        gap: 16px;
+    }
+
+    .analytics-stat-card {
+        min-height: 245px;
+        border-radius: 24px;
+        padding: 24px 26px;
+        background-position: center center;
+    }
+
+    .analytics-stat-content {
+        max-width: 72%;
+    }
+
+    .analytics-stat-label {
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+    }
+
+    .analytics-stat-value {
+        font-size: 3.2rem;
+    }
+
+    .analytics-stat-tag {
+        font-size: 0.78rem;
+        padding: 8px 12px;
+    }
+
+    .analytics-insight-card {
+        min-height: 150px;
+        padding: 22px 20px;
+        border-radius: 22px;
+    }
+
+    .analytics-badge {
+        top: 18px;
+        right: 16px;
+        font-size: 0.62rem;
+        padding: 6px 11px;
+    }
+
+    .analytics-insight-title {
+        font-size: 1.15rem;
+        padding-right: 95px;
+        gap: 10px;
+    }
+
+    .analytics-insight-title i {
+        width: 38px;
+        height: 38px;
+    }
+
+    .analytics-insight-text {
+        font-size: 0.86rem;
+        line-height: 1.65;
+        max-width: 94%;
+    }
+
+    /* AI summary card */
+    .ai-summary-card {
+        min-height: auto;
+        padding: 22px 20px 26px;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        overflow: hidden;
+    }
+
+    .ai-summary-left {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .ai-summary-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+
+    .ai-summary-copy h3 {
+        font-size: 1.45rem;
+        line-height: 1.1;
+        margin: 2px 0 10px;
+    }
+
+    .ai-summary-copy p {
+        font-size: 0.86rem;
+        line-height: 1.6;
+        max-width: 210px;
+    }
+
+    .ai-summary-badge {
+        position: static;
+        margin: 14px 0 6px 56px;
+        font-size: 0.68rem;
+        padding: 8px 12px;
+        white-space: normal;
+    }
+
+    .ai-summary-right {
+        right: 12px;
+        bottom: 24px;
+    }
+
+    .ai-sleep-cat {
+        width: 112px;
+        opacity: 0.78;
+    }
+
+    /* Sensor archive/table */
+    .crud-section {
+        padding: 22px 18px 24px;
+        border-radius: 26px;
+        overflow: hidden;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .table-header h3 {
+        font-size: 1.35rem !important;
+        line-height: 1.15;
+    }
+
+    .table-header span {
+        font-size: 0.76rem !important;
+        line-height: 1.4;
+    }
+
+    .archive-prune-btn {
+        width: auto;
+        padding: 10px 16px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .table-scroll-wrapper {
+        width: 100%;
+        max-width: 100%;
+        max-height: 330px;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 18px;
+        display: block;
+    }
+
+    .crud-table {
+        width: max-content;
+        min-width: 680px;
+        table-layout: auto;
+    }
+
+    .crud-table th,
+    .crud-table td {
+        white-space: nowrap;
+    }
+
+    .crud-table thead th {
+        padding: 13px 16px;
+        font-size: 0.88rem;
+    }
+
+    .crud-table tbody td {
+        padding: 13px 16px;
+        font-size: 0.82rem;
+    }
+
+    /* Delete modal */
+    .modal-content {
+        width: calc(100% - 36px);
+        padding: 24px 18px;
+    }
+
+    .btn-cancel,
+    .btn-confirm-delete {
+        padding: 10px 14px;
+        font-size: 0.8rem;
+    }
+    .decision-support-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .decision-card {
+        border-radius: 24px;
+        padding: 20px 18px;
+        min-height: auto;
+    }
+
+    .decision-label {
+        font-size: 1.12rem;
+    }
+
+    .comfort-score-number {
+        font-size: 3.3rem;
+    }
+
+    .decision-card p {
+        font-size: 0.84rem;
+    }
+
+    .mini-metric-row span {
+        font-size: 0.75rem;
+    }
+    .heat-risk-chart-card {
+        border-radius: 24px;
+        padding: 20px 18px 22px;
+    }
+
+    .heat-risk-chart-header h3 {
+        font-size: 1.25rem;
+    }
+
+    .heat-risk-chart-header p {
+        font-size: 0.8rem;
+    }
+
+    .heat-risk-chart-wrapper {
+        height: 220px;
+        padding: 10px;
     }
 }

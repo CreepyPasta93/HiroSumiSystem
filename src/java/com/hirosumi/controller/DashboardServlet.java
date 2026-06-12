@@ -1,5 +1,7 @@
 package com.hirosumi.controller;
 
+import com.hirosumi.dao.NotificationLogDAO;
+import com.hirosumi.model.NotificationLog;
 import com.hirosumi.dao.AnalyticsDAO;
 import com.hirosumi.dao.SystemLogDAO;
 import com.hirosumi.model.SensorData;
@@ -22,6 +24,11 @@ public class DashboardServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         AnalyticsDAO dao = new AnalyticsDAO();
+
+        if ("getNotifications".equals(action)) {
+            getLatestNotifications(request, response);
+            return;
+        }
 
         // ==========================================
         // 1. AJAX REQUEST: Graph Data Update
@@ -58,9 +65,8 @@ public class DashboardServlet extends HttpServlet {
             json.append("]");
             out.print(json.toString());
             out.flush();
-            return; 
-        } 
-        // ==========================================
+            return;
+        } // ==========================================
         // 2. MANUAL REPORT (Bell Click)
         // ==========================================
         else if ("sendReport".equals(action)) {
@@ -110,7 +116,8 @@ public class DashboardServlet extends HttpServlet {
                 String timeStr = "Unknown";
                 try {
                     timeStr = current.getTimestamp().toString().substring(0, 16);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
                 // E. BUILD MESSAGE
                 msg = String.format("📢 *HiroSumi Status Report*\n"
@@ -129,11 +136,11 @@ public class DashboardServlet extends HttpServlet {
                         fanText,
                         timeStr);
 
-                success = TelegramNotifier.sendAlert(msg);
+                success = TelegramNotifier.sendAlert(getServletContext(), msg);
 
             } else {
                 msg = "⚠️ *HiroSumi Alert*: System is offline.";
-                success = TelegramNotifier.sendAlert(msg);
+                success = TelegramNotifier.sendAlert(getServletContext(), msg);
             }
 
             if (success) {
@@ -159,5 +166,56 @@ public class DashboardServlet extends HttpServlet {
 
         request.setAttribute("latest", latest);
         request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+    }
+
+    private void getLatestNotifications(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        NotificationLogDAO dao = new NotificationLogDAO();
+        List<NotificationLog> logs = dao.getLatestNotifications(5);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a");
+
+        StringBuilder json = new StringBuilder();
+        json.append("[");
+
+        for (int i = 0; i < logs.size(); i++) {
+            NotificationLog log = logs.get(i);
+
+            String message = log.getMessageContent() != null ? log.getMessageContent() : "";
+            String platform = log.getPlatform() != null ? log.getPlatform() : "";
+            String status = log.getStatus() != null ? log.getStatus() : "";
+            String time = log.getSentTimestamp() != null ? sdf.format(log.getSentTimestamp()) : "Unknown time";
+
+            json.append("{");
+            json.append("\"logId\":").append(log.getLogId()).append(",");
+            json.append("\"messageContent\":\"").append(escapeJson(message)).append("\",");
+            json.append("\"platform\":\"").append(escapeJson(platform)).append("\",");
+            json.append("\"sentTimestamp\":\"").append(escapeJson(time)).append("\",");
+            json.append("\"status\":\"").append(escapeJson(status)).append("\"");
+            json.append("}");
+
+            if (i < logs.size() - 1) {
+                json.append(",");
+            }
+        }
+
+        json.append("]");
+
+        response.getWriter().write(json.toString());
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", " ")
+                .replace("\r", " ");
     }
 }

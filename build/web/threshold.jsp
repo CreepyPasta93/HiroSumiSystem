@@ -5,13 +5,28 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
+    /*
+        ==========================================================
+        PAGE DATA SETUP
+        ==========================================================
+        This page allows volunteers/members to:
+        1. View current threshold settings.
+        2. Submit threshold change requests.
+        3. View their request history.
+
+        Required request attributes from ThresholdServlet:
+        - config
+        - userRequests
+     */
     User currentUser = (User) session.getAttribute("currentUser");
+
     if (currentUser == null) {
         response.sendRedirect("login.jsp");
         return;
     }
 
     Configuration sysConfig = (Configuration) request.getAttribute("config");
+
     if (sysConfig == null) {
         response.sendRedirect("ThresholdServlet");
         return;
@@ -23,351 +38,330 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>HiroSumi - Volunteer Portal</title>
+        <title>HiroSumi - Threshold Request Portal</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Global project styles -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
+
+        <!-- Page-specific styles -->
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/threshold.css">
+
+        <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 
-        <style>
-            body {
-                overflow-x: hidden;
-                background-color: var(--bg-cream);
-                margin: 0;
-            }
-
-            .dashboard-container {
-                display: flex;
-                width: 100%;
-                min-height: 100vh;
-            }
-
-            .main-content {
-                flex-grow: 1;
-                height: 100vh;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-                transition: margin-left 0.4s;
-            }
-
-            .volunteer-layout {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                padding: 30px 50px;
-                width: 100%;
-                max-width: 1200px; /* Keeps it from stretching too far on big screens */
-                margin: 0 auto;
-                box-sizing: border-box;
-            }
-
-            /* 🍵 LEVEL 1: Aesthetic Matcha Cards */
-            .summary-row {
-                display: flex;
-                gap: 20px;
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .card-matcha {
-                background: #f0f4ef !important;
-                border: 2px solid #d8e2dc !important;
-                border-radius: 25px !important;
-                padding: 20px;
-                box-shadow: 5px 5px 0px #a3b18a;
-                position: relative;
-                transition: transform 0.3s ease;
-                flex: 1;
-                min-width: 200px;
-            }
-
-            .card-matcha span {
-                color: #6b8e23 !important;
-                font-weight: bold;
-                text-transform: uppercase;
-                font-size: 0.75rem;
-                letter-spacing: 1px;
-            }
-
-            .card-matcha .big-val {
-                color: #4a6d4a !important;
-                font-size: 1.8rem;
-                font-weight: 800;
-                font-family: 'Comic Neue', cursive;
-                margin-top: 5px;
-            }
-
-            /* 🍓 LEVEL 2: Strawberry Form */
-            /* 🍓 FIX THE FORM SIZE */
-            .card-strawberry {
-                background: #fff;
-                border-radius: 25px;
-                padding: 35px;
-                border: 2px solid var(--active-pink);
-                box-shadow: 0 10px 30px rgba(214, 90, 104, 0.1);
-
-                width: 100%;
-                max-width: 600px !important; /* Brings it back to the nice, compact size */
-                margin: 0 auto !important;   /* Centers it in the middle of the screen */
-                box-sizing: border-box;
-            }
-
-            /* Make the title slightly smaller so it doesn't push the form out */
-            .card-strawberry h2 {
-                font-size: 1.8rem !important;
-                margin-bottom: 20px !important;
-            }
-
-            .request-table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0 10px;
-            }
-
-            .request-table th {
-                background-color: #a3b18a;
-                color: white;
-                padding: 15px;
-                text-align: left;
-                border-radius: 10px;
-            }
-
-            .request-table td {
-                background: white;
-                padding: 15px;
-                border-top: 1px solid #fce4ec;
-                border-bottom: 1px solid #fce4ec;
-            }
-
-            .status-pending {
-                color: #f39c12;
-                font-weight: bold;
-            }
-            .status-approved {
-                color: #27ae60;
-                font-weight: bold;
-            }
-            .status-denied {
-                color: #e74c3c;
-                font-weight: bold;
-            }
-
-            .aesthetic-input {
-                width: 100%;
-                padding: 12px;
-                border-radius: 15px;
-                border: 2px solid #fce4ec;
-                font-family: 'Quicksand';
-                background-color: #fffafb;
-            }
-
-            .btn-submit-request {
-                background-color: var(--active-pink);
-                color: white;
-                border: none;
-                padding: 15px 30px;
-                border-radius: 30px;
-                width: 100%;
-                font-weight: bold;
-                font-size: 1.1rem;
-                cursor: pointer;
-                transition: 0.3s;
-                margin-top: 10px;
-            }
-
-            .btn-submit-request:hover {
-                transform: scale(1.02);
-                filter: brightness(1.1);
-            }
-
-            /* Modal Styling */
-            .modal {
-                position: fixed;
-                z-index: 9999;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: none;
-                justify-content: center;
-                align-items: center;
-            }
-
-
-            /* --- 🎀 SIDEBAR STYLES --- */
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: -280px; /* THIS MAKES IT START HIDDEN */
-                width: 260px;
-                height: 100vh;
-                background-color: var(--bg-pink, #fce4ec);
-                z-index: 1000;
-                transition: left 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            }
-            .sidebar.active {
-                left: 0; /* THIS MAKES IT SLIDE IN */
-            }
-            .sidebar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(62, 39, 35, 0.3);
-                z-index: 900;
-                display: none;
-                opacity: 0;
-                transition: opacity 0.3s;
-            }
-            .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-        </style>
+        <!-- Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Quicksand:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     </head>
 
-    <body>
+    <body class="threshold-page">
+
+        <!-- Sidebar open button -->
+        <button class="sidebar-open-btn" type="button" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <!-- Sidebar overlay -->
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <div class="dashboard-container">
-            <jsp:include page="sidebar.jsp"/> 
 
-            <div class="main-content">
+            <%
+                /*
+                    Highlight Threshold page in shared sidebar.
+                 */
+                request.setAttribute("activePage", "threshold");
+            %>
+            <jsp:include page="sidebar.jsp" />
 
-                <jsp:include page="header.jsp"/>
+            <main class="main-content">
 
-                <div class="volunteer-layout">
+                <!-- Shared header -->
+                <jsp:include page="header.jsp" />
 
-                    <div class="summary-row">
-                        <div class="card-matcha">
-                            <span>Heater Activation</span>
-                            <div class="big-val"><%= sysConfig.getHeaterActivation()%>°C</div>
-                            <i class="fa-solid fa-fire" style="position:absolute; bottom:15px; right:20px; opacity:0.1; font-size: 2rem;"></i>
+                <section class="threshold-layout">
+
+                    <!-- ===================================================== -->
+                    <!-- PAGE HEADING -->
+                    <!-- ===================================================== -->
+                    <div class="threshold-page-heading">
+
+                        <div class="threshold-title-icon">
+                            <i class="fa-solid fa-bell"></i>
                         </div>
-                        <div class="card-matcha">
-                            <span>Fan Activation</span>
-                            <div class="big-val"><%= sysConfig.getFanActivationThreshold()%>°C</div>
-                            <i class="fa-solid fa-fan" style="position:absolute; bottom:15px; right:20px; opacity:0.1; font-size: 2rem;"></i>
-                        </div>
-                        <div class="card-matcha">
-                            <span>Humidity Limit</span>
-                            <div class="big-val"><%= sysConfig.getHumidityThreshold()%>%</div>
-                            <i class="fa-solid fa-droplet" style="position:absolute; bottom:15px; right:20px; opacity:0.1; font-size: 2rem;"></i>
+
+                        <div class="threshold-title-copy">
+                            <h1>Threshold Request Portal</h1>
+                            <p>
+                                View current shelter comfort settings and request changes for technician approval
+                                <span>🐾</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="card-strawberry">
-                        <form action="SubmitThresholdRequestServlet" method="POST">
-                            <h2 style="text-align:center; font-family:'Comic Neue'; color:var(--active-pink); margin-bottom: 25px;"><h2 style="text-align:center; font-family:'Comic Neue'; color:var(--active-pink); margin-bottom: 25px;">
-                                    <i class="fa-solid fa-pen-to-square"></i> Request a System Change
-                                </h2>
+                    <!-- ===================================================== -->
+                    <!-- CURRENT THRESHOLD SUMMARY CARDS -->
+                    <!-- ===================================================== -->
+                    <div class="summary-row">
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <article class="summary-card summary-heater">
+                            <div class="summary-icon">
+                                <i class="fa-solid fa-fire"></i>
+                            </div>
+
+                            <div class="summary-content">
+                                <span class="summary-label">Heater Activation</span>
+                                <strong class="summary-value">
+                                    <%= String.format("%.1f", sysConfig.getHeaterActivation())%>°C
+                                </strong>
+                                <p>Turns on when the shelter temperature becomes too low.</p>
+                            </div>
+
+                            <span class="summary-paw">🐾</span>
+                        </article>
+
+                        <article class="summary-card summary-fan">
+                            <div class="summary-icon">
+                                <i class="fa-solid fa-fan"></i>
+                            </div>
+
+                            <div class="summary-content">
+                                <span class="summary-label">Fan Activation</span>
+                                <strong class="summary-value">
+                                    <%= String.format("%.1f", sysConfig.getFanActivationThreshold())%>°C
+                                </strong>
+                                <p>Starts airflow when the shelter becomes too warm.</p>
+                            </div>
+
+                            <span class="summary-paw">🐾</span>
+                        </article>
+
+                        <article class="summary-card summary-humidity">
+                            <div class="summary-icon">
+                                <i class="fa-solid fa-droplet"></i>
+                            </div>
+
+                            <div class="summary-content">
+                                <span class="summary-label">Humidity Limit</span>
+                                <strong class="summary-value">
+                                    <%= String.format("%.1f", sysConfig.getHumidityThreshold())%>%
+                                </strong>
+                                <p>Keeps air fresh and helps prevent damp shelter conditions.</p>
+                            </div>
+
+                            <span class="summary-paw">🐾</span>
+                        </article>
+
+                    </div>
+
+                    <!-- ===================================================== -->
+                    <!-- FORM + HISTORY TWO-COLUMN SECTION -->
+                    <!-- ===================================================== -->
+                    <div class="threshold-workspace">
+
+                        <!-- ========================= -->
+                        <!-- REQUEST FORM CARD -->
+                        <!-- ========================= -->
+                        <section class="request-card">
+
+                            <form action="SubmitThresholdRequestServlet" method="POST">
+
+                                <div class="request-card-header">
+                                    <div class="request-icon">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </div>
+
                                     <div>
-                                        <label style="font-weight:bold; color: #555;">PARAMETER</label>
-                                        <select name="sensorName" class="aesthetic-input" style="margin-top: 8px;">
+                                        <h2>Request a System Change</h2>
+                                        <p>Suggest safer comfort settings for the shelter cats 🍓</p>
+                                    </div>
+                                </div>
+
+                                <div class="request-form-grid">
+
+                                    <div class="form-group">
+                                        <label class="threshold-label" for="sensorName">Parameter</label>
+
+                                        <select id="sensorName" name="sensorName" class="aesthetic-input" required>
                                             <option value="Heater Trigger">Heater Activation</option>
                                             <option value="Heater Cutoff">Heater Cut-off</option>
                                             <option value="Fan Trigger">Fan Activation</option>
                                             <option value="Humidity Limit">Humidity Threshold</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label style="font-weight:bold; color: #555;">PROPOSED VALUE</label>
-                                        <input type="number" step="0.1" name="proposedValue" class="aesthetic-input" style="margin-top: 8px;" required>
+
+                                    <div class="form-group">
+                                        <label class="threshold-label" for="proposedValue">Proposed Value</label>
+
+                                        <input
+                                            id="proposedValue"
+                                            type="number"
+                                            step="0.1"
+                                            name="proposedValue"
+                                            class="aesthetic-input"
+                                            placeholder="Example: 28.0"
+                                            required
+                                            >
                                     </div>
+
                                 </div>
 
-                                <div style="margin-top: 20px; margin-bottom: 20px;">
-                                    <label style="font-weight:bold; color: #555;">JUSTIFICATION</label>
-                                    <textarea name="reason" class="aesthetic-input" rows="3" style="margin-top: 8px;" placeholder="Describe why this change helps the cats..."></textarea>
+                                <div class="form-group reason-group">
+                                    <label class="threshold-label" for="reason">Justification</label>
+
+                                    <textarea
+                                        id="reason"
+                                        name="reason"
+                                        class="aesthetic-input"
+                                        rows="4"
+                                        placeholder="Describe why this change helps the cats..."
+                                        ></textarea>
                                 </div>
 
                                 <button type="submit" class="btn-submit-request">
-                                    Send to Technician <i class="fa-solid fa-paper-plane" style="margin-left: 10px;"></i>
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span>Send to Technician</span>
+                                    <span class="btn-paw">🐾</span>
                                 </button>
-                        </form>
+
+                            </form>
+
+                        </section>
+
+                        <!-- ========================= -->
+                        <!-- REQUEST HISTORY CARD -->
+                        <!-- ========================= -->
+                        <section class="history-card">
+
+                            <div class="history-header">
+                                <div class="history-title-wrap">
+                                    <div class="history-icon">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </div>
+
+                                    <div>
+                                        <h3>My Request History</h3>
+                                        <p>Track your threshold requests and technician responses</p>
+                                    </div>
+                                </div>
+
+                                <span class="history-badge">
+                                    <i class="fa-solid fa-paw"></i>
+                                    Volunteer Log
+                                </span>
+                            </div>
+
+                            <div class="request-table-wrapper">
+
+                                <table class="request-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sensor</th>
+                                            <th>Proposed Value</th>
+                                            <th>Status</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <%
+                                            List<Notification> myRequests = (List<Notification>) request.getAttribute("userRequests");
+
+                                            if (myRequests != null && !myRequests.isEmpty()) {
+                                                for (Notification r : myRequests) {
+                                                    String requestStatus = (r.getStatus() != null) ? r.getStatus() : "PENDING";
+                                                    String statusClass = "status-" + requestStatus.toLowerCase();
+                                        %>
+
+                                        <tr>
+                                            <td class="sensor-name"><%= r.getSensorName()%></td>
+                                            <td><%= r.getNewThreshold()%>°C</td>
+                                            <td>
+                                                <span class="status-pill <%= statusClass%>">
+                                                    <%= requestStatus%>
+                                                </span>
+                                            </td>
+                                            <td class="reason-text"><%= r.getReason()%></td>
+                                        </tr>
+
+                                        <%
+                                            }
+                                        } else {
+                                        %>
+
+                                        <tr>
+                                            <td colspan="4" class="empty-history">
+                                                <div class="empty-state">
+                                                    <img
+                                                        src="${pageContext.request.contextPath}/images/eepy-cat.png"
+                                                        alt="Sleeping cat"
+                                                        class="empty-cat"
+                                                        >
+
+                                                    <h4>No requests yet.</h4>
+                                                    <p>Your requests will appear here.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <% }%>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </section>
+
                     </div>
 
-                    <div style="margin-top: 10px; margin-bottom: 50px;">
-                        <h3 style="font-family:'Comic Neue'; color:#4a6d4a;">
-                            <i class="fa-solid fa-clock-rotate-left"></i> My Request History
-                        </h3>
-                        <table class="request-table">
-                            <thead>
-                                <tr>
-                                    <th>Sensor</th>
-                                    <th>Proposed Value</th>
-                                    <th>Justification</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <%
-                                    List<Notification> myRequests = (List<Notification>) request.getAttribute("userRequests");
-                                    if (myRequests != null && !myRequests.isEmpty()) {
-                                        for (Notification r : myRequests) {
-                                            String s = (r.getStatus() != null) ? r.getStatus() : "PENDING";
-                                            String statusClass = "status-" + s.toLowerCase();
-                                %>
-                                <tr>
-                                    <td style="font-weight: bold;"><%= r.getSensorName()%></td>
-                                    <td><%= r.getNewThreshold()%>°C</td>
-                                    <td style="color: #666; font-size: 0.9rem;"><%= r.getReason()%></td>
-                                    <td class="<%= statusClass%>">
-                                        <span style="padding: 6px 12px; border-radius: 20px; background: #f8f9fa; border: 1px solid #ddd;">
-                                            <%= s%>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <%
-                                    }
-                                } else {
-                                %>
-                                <tr>
-                                    <td colspan="4" style="text-align:center; padding: 40px; color:#999; background: #fff; border-radius: 20px;">
-                                        No request history yet. 🌸
-                                    </td>
-                                </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
-                </div> 
+                </section>
 
-                <% if ("success".equals(status)) { %>
-                <div id="successModal" class="modal" style="display:flex;">
-                    <div class="modal-content" style="background: white; padding: 40px; border-radius: 25px; text-align: center; border-top: 10px solid #a3b18a;">
-                        <div style="font-size:3rem;">🍵🍓</div>
-                        <h2 style="font-family:'Comic Neue'; color:#4a6d4a;">Request Sent!</h2>
-                        <p>The technician will review your proposal shortly.</p>
-                        <button onclick="document.getElementById('successModal').style.display = 'none'"
-                                style="width:100%; padding:15px; margin-top:10px; background:#a3b18a; border-radius: 30px; border: none; color: white; font-weight: bold; cursor: pointer;">Got it!</button>
-                    </div>
-                </div>
-                <% }%>
-            </div>
+            </main>
+
         </div>
 
+        <!-- ===================================================== -->
+        <!-- SUCCESS MODAL -->
+        <!-- ===================================================== -->
+        <% if ("success".equals(status)) { %>
+        <div id="successModal" class="modal success-modal-show">
+            <div class="modal-content">
+                <div class="modal-emoji">🍵🍓</div>
+
+                <h2>Request Sent!</h2>
+
+                <p>The technician will review your proposal shortly.</p>
+
+                <button type="button" onclick="closeSuccessModal()">
+                    Got it!
+                </button>
+            </div>
+        </div>
+        <% }%>
+
+        <!-- ===================================================== -->
+        <!-- PAGE JAVASCRIPT -->
+        <!-- ===================================================== -->
         <script>
-            // Sidebar Toggle
             function toggleSidebar() {
-                // Look for the class '.sidebar' instead of the ID
-                const sidebar = document.querySelector('.sidebar');
+                const sidebar = document.getElementById('mySidebar');
                 const overlay = document.querySelector('.sidebar-overlay');
 
-                if (sidebar) {
+                if (sidebar && overlay) {
                     sidebar.classList.toggle('active');
-                }
-                if (overlay) {
                     overlay.classList.toggle('active');
                 }
             }
-            // URL Cleanup
+
+            function closeSuccessModal() {
+                const modal = document.getElementById('successModal');
+
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
             window.onload = function () {
                 if (window.location.search.includes('status=success')) {
                     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -375,5 +369,6 @@
                 }
             };
         </script>
+
     </body>
 </html>

@@ -1,5 +1,7 @@
 package com.hirosumi.dao;
 
+import java.util.ArrayList;
+import java.util.List;
 import static com.hirosumi.dao.DBConnection.getConnection;
 import com.hirosumi.model.User;
 import java.sql.*;
@@ -21,16 +23,15 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // User exists, now retrieve the stored hash
                 dbHash = rs.getString("password_hash");
                 String dbRole = rs.getString("role");
+                boolean verified = rs.getBoolean("is_verified");
 
-                // 2. VERIFY PASSWORD using BCrypt
-                // BCrypt.checkpw(plain_text, stored_hash) returns true if they match
+                if (!verified) {
+                    return null;
+                }
+
                 if (BCrypt.checkpw(password, dbHash)) {
-
-                    // 3. VERIFY ROLE
-                    // Ensure the user is logging in with the correct role
                     if (dbRole.equalsIgnoreCase(selectedRole)) {
                         user = new User();
                         user.setUserId(rs.getInt("userId"));
@@ -38,6 +39,8 @@ public class UserDAO {
                         user.setFullName(rs.getString("fullName"));
                         user.setRole(dbRole);
                         user.setEmail(rs.getString("email"));
+                        user.setProfileImage(rs.getString("profile_image"));
+                        user.setMustChangePassword(rs.getBoolean("must_change_password"));
                     }
                 }
             }
@@ -47,31 +50,104 @@ public class UserDAO {
         return user;
     }
 
-    public boolean registerUser(User user, String password) {
+    public boolean registerUser(User user, String password, String token, LocalDateTime expiry) {
         boolean isSuccess = false;
 
-        // 1. HASH THE PASSWORD using BCrypt
-        // gensalt() creates a random salt every time
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-        String sql = "INSERT INTO user (username, password_hash, fullName, email, role) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO user (username, password_hash, fullName, email, role, is_verified, verification_token, token_expiry) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, user.getUsername());
-            ps.setString(2, hashedPassword); // SAVE THE HASH, NOT THE PLAIN TEXT
+            ps.setString(2, hashedPassword);
             ps.setString(3, user.getFullName());
             ps.setString(4, user.getEmail());
             ps.setString(5, "Volunteer");
+            ps.setBoolean(6, false);
+            ps.setString(7, token);
+            ps.setTimestamp(8, Timestamp.valueOf(expiry));
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 isSuccess = true;
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return isSuccess;
+    }
+
+    public boolean isUsernameExists(String username) {
+        String sql = "SELECT userId FROM user WHERE username = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean isEmailExists(String email) {
+        String sql = "SELECT userId FROM user WHERE email = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean isUserVerified(String username) {
+        String sql = "SELECT is_verified FROM user WHERE username = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getBoolean("is_verified");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    //Verify User
+    public boolean verifyUserByToken(String token) {
+        String sql = "UPDATE user SET is_verified = 1, verification_token = NULL, token_expiry = NULL "
+                + "WHERE verification_token = ? AND token_expiry > NOW()";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, token);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     // UPDATE USER DETAILS
@@ -193,6 +269,88 @@ public class UserDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean updatePasswordByUserId(int userId, String newPassword) {
+        boolean isSuccess = false;
+
+        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+
+        String sql = "UPDATE user SET password_hash = ?, must_change_password = 0 WHERE userId = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, hashedPassword);
+            ps.setInt(2, userId);
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                isSuccess = true;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return isSuccess;
+    }
+
+    // GET ALL USERS FOR TECHNICIAN ROLE MANAGEMENT
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+
+        String sql = "SELECT userId, username, fullName, role, email, profile_image, must_change_password "
+                + "FROM user "
+                + "ORDER BY role ASC, fullName ASC";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("userId"));
+                user.setUsername(rs.getString("username"));
+                user.setFullName(rs.getString("fullName"));
+                user.setRole(rs.getString("role"));
+                user.setEmail(rs.getString("email"));
+                user.setProfileImage(rs.getString("profile_image"));
+                user.setMustChangePassword(rs.getBoolean("must_change_password"));
+
+                users.add(user);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
+
+// UPDATE USER ROLE - ONLY ALLOW VOLUNTEER OR TECHNICIAN
+    public boolean updateUserRole(int userId, String newRole) {
+        if (newRole == null) {
+            return false;
+        }
+
+        if (!newRole.equalsIgnoreCase("Volunteer") && !newRole.equalsIgnoreCase("Technician")) {
+            return false;
+        }
+
+        String normalizedRole = newRole.equalsIgnoreCase("Technician") ? "Technician" : "Volunteer";
+
+        String sql = "UPDATE user SET role = ? WHERE userId = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, normalizedRole);
+            ps.setInt(2, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 }

@@ -3,12 +3,19 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
+
     // ==========================================
     // 🔒 1. SECURITY & SESSION CHECK
     // ==========================================
     User currentUser = (User) session.getAttribute("currentUser");
     if (currentUser == null) {
         response.sendRedirect("login.jsp");
+        return;
+    }
+
+    // Force technician/default account to change password first
+    if (currentUser.isMustChangePassword()) {
+        response.sendRedirect("forceChangePassword.jsp");
         return;
     }
 
@@ -97,7 +104,7 @@
 <html>
     <head>
         <title>HiroSumi - Dashboard</title>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -113,14 +120,51 @@
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <div id="statusModal" class="modal">
-            <div class="modal-content">
-                <i id="modalIcon" class="fa-solid fa-circle-check" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <div class="modal-content cute-status-modal">
 
-                <h3 id="modalTitle" style="margin: 0 0 10px 0; color: #3E2723; font-family: 'Comic Neue', cursive;">Success!</h3>
+                <button class="modal-x-btn" onclick="closeModal()" type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
 
-                <p id="modalMsg" style="color: #555; margin: 0; font-size: 0.95rem; line-height: 1.4;"></p>
+                <div class="modal-deco modal-strawberry">🍓</div>
+                <div class="modal-deco modal-paw">🐾</div>
 
-                <button class="btn-close-modal" onclick="closeModal()">Yeay!</button>
+                <div class="modal-cat-bubble">
+                    <i id="modalIcon" class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <h3 id="modalTitle">Report Sent!</h3>
+
+                <p id="modalMsg">
+                    The latest sensor reading has been sent to your Telegram.
+                </p>
+
+                <div class="modal-mini-note">
+                    <i class="fa-solid fa-cat"></i>
+                    <span>HiroSumi is keeping the shelter updated.</span>
+                </div>
+
+                <button class="btn-close-modal" onclick="closeModal()" type="button">
+                    Yeay! <span>♡</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="notificationPanel" class="notification-panel">
+            <div class="notification-panel-header">
+                <div>
+                    <h3>Notifications 🐾</h3>
+                    <p>Latest Telegram history</p>
+                </div>
+                <button type="button" onclick="toggleNotificationPanel()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="notificationList" class="notification-list">
+                <div class="notification-empty">
+                    Loading notifications...
+                </div>
             </div>
         </div>
 
@@ -136,21 +180,26 @@
                     <div class="row-hero">
 
                         <div class="hero-graph-container" style="border: 2px solid #F8BBD0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <div>
-                                    <h2 style="font-family: 'Comic Neue', cursive; margin:0; font-size:2rem; color:#3E2723;">Environment Trend</h2>
-                                    <span style="font-size:0.9rem; color:#666;">Real-time sensor monitoring</span>
+                            <div class="graph-header">
+                                <div class="graph-title-box">
+                                    <h2>Environment Trend</h2>
+                                    <span>Real-time sensor monitoring</span>
                                 </div>
-                                <div style="display:flex; align-items:center; gap:15px; background:rgba(255,255,255,0.5); padding:5px 15px; border-radius:20px;">
-                                    <label style="font-weight:bold; font-size:0.85rem; cursor:pointer;"><input type="checkbox" id="chkTemp" checked> Temp</label>
-                                    <label style="font-weight:bold; font-size:0.85rem; cursor:pointer;"><input type="checkbox" id="chkHum" checked> Hum</label>
-                                    <label style="font-weight:bold; font-size:0.85rem; cursor:pointer;"><input type="checkbox" id="chkPres" checked> Pressure</label>
-                                    <button onclick="updateChart()" style="border:none; background:#fff8f0; cursor:pointer; color:#557159;"><i class="fa-solid fa-rotate"></i></button>
+
+                                <div class="graph-controls">
+                                    <label><input type="checkbox" id="chkTemp" checked> Temp</label>
+                                    <label><input type="checkbox" id="chkHum" checked> Hum</label>
+                                    <label><input type="checkbox" id="chkPres" checked> Pressure</label>
+                                    <button onclick="updateChart()" type="button">
+                                        <i class="fa-solid fa-rotate"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div style="flex-grow:1; width:100%; position:relative;">
+
+                            <div class="chart-box">
                                 <canvas id="tempChart"></canvas>
                             </div>
+
                             <input type="hidden" id="startDate">
                             <input type="hidden" id="endDate">
                         </div>
@@ -335,7 +384,6 @@
                         </div>
 
                         <!-- Data Sync Card -->
-                        <!-- Data Sync Card -->
                         <div class="dash-card data-sync-card">
 
                             <div class="data-sync-header">
@@ -399,26 +447,22 @@
             // --- 2. MODAL LOGIC (Replaces Toast) ---
             function showModal(title, message, isSuccess) {
                 const modal = document.getElementById('statusModal');
+                const content = modal.querySelector('.modal-content');
                 const icon = document.getElementById('modalIcon');
                 const titleEl = document.getElementById('modalTitle');
                 const msgEl = document.getElementById('modalMsg');
 
-                // Set Content
                 titleEl.innerText = title;
                 msgEl.innerText = message;
 
-                // Set Style (Green/Red)
                 if (isSuccess) {
+                    content.classList.remove('error-mode');
                     icon.className = "fa-solid fa-circle-check";
-                    icon.style.color = "#66BB6A"; // Green
-                    titleEl.style.color = "#2E7D32";
                 } else {
-                    icon.className = "fa-solid fa-circle-xmark";
-                    icon.style.color = "#EF5350"; // Red
-                    titleEl.style.color = "#C62828";
+                    content.classList.add('error-mode');
+                    icon.className = "fa-solid fa-triangle-exclamation";
                 }
 
-                // Show
                 modal.style.display = 'flex';
             }
 
@@ -426,7 +470,199 @@
                 document.getElementById('statusModal').style.display = 'none';
             }
 
-            // --- 3. BELL BUTTON LOGIC ---
+            function toggleNotificationPanel() {
+                console.log("Bell clicked: opening notification panel");
+
+                const panel = document.getElementById('notificationPanel');
+
+                if (!panel) {
+                    console.log("notificationPanel not found");
+                    return;
+                }
+
+                panel.classList.toggle('active');
+
+                if (panel.classList.contains('active')) {
+                    console.log("Panel is active, loading notification history...");
+                    loadNotificationHistory();
+                }
+            }
+
+            function loadNotificationHistory() {
+                const list = document.getElementById('notificationList');
+
+                list.innerHTML = `
+        <div class="notification-empty">
+            Fetching latest notification history...
+        </div>
+    `;
+
+                fetch('DashboardServlet?action=getNotifications')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("Failed to fetch notifications");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log("Notification data from DB:", data);
+
+                            if (!data || data.length === 0) {
+                                list.innerHTML = `
+                    <div class="notification-empty">
+                        No notification history yet.
+                    </div>
+                `;
+                                return;
+                            }
+
+                            list.innerHTML = "";
+
+                            data.forEach(item => {
+                                const status = (item.status || "UNKNOWN").trim().toUpperCase();
+                                const platform = (item.platform || "Telegram").trim();
+                                const time = item.sentTimestamp || "Unknown time";
+                                const message = item.messageContent || "";
+
+                                let statusClass = "partial";
+                                let icon = "fa-triangle-exclamation";
+                                let statusText = status;
+
+                                if (status === "SENT") {
+                                    statusClass = "sent";
+                                    icon = "fa-circle-check";
+                                    statusText = "Sent";
+                                } else if (status === "FAILED") {
+                                    statusClass = "failed";
+                                    icon = "fa-circle-xmark";
+                                    statusText = "Failed";
+                                } else if (status === "PARTIAL_FAILED") {
+                                    statusClass = "partial";
+                                    icon = "fa-triangle-exclamation";
+                                    statusText = "Partial";
+                                }
+
+                                const summary = getNotificationSummary(message);
+                                const shortMessage = shortenMessage(message);
+
+                                list.innerHTML +=
+                                        '<div class="notification-item ' + statusClass + '">' +
+                                        '<div class="notification-icon">' +
+                                        '<i class="fa-solid ' + icon + '"></i>' +
+                                        '</div>' +
+                                        '<div class="notification-info">' +
+                                        '<div class="notification-title">' +
+                                        '<span class="notification-main-title">' + escapeHtml(platform + ' ' + summary) + '</span>' +
+                                        '<span class="notification-status-pill">' + escapeHtml(statusText) + '</span>' +
+                                        '</div>' +
+                                        '<p>' + escapeHtml(shortMessage) + '</p>' +
+                                        '<small><i class="fa-regular fa-clock"></i> ' + escapeHtml(time) + '</small>' +
+                                        '</div>' +
+                                        '</div>';
+                            });
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            list.innerHTML = `
+                <div class="notification-empty error">
+                    Could not load notifications.
+                </div>
+            `;
+                        });
+            }
+
+            function getNotificationSummary(message) {
+                if (!message) {
+                    return "Report";
+                }
+
+                let clean = message
+                        .replace(/\*/g, "")
+                        .replace(/_/g, "")
+                        .replace(/\n/g, " ")
+                        .replace(/\s+/g, " ")
+                        .trim();
+
+                if (clean.includes("HiroSumi Status Report")) {
+                    return "Status Report";
+                }
+
+                if (clean.includes("Temperature") || clean.includes("Temp")) {
+                    return "Sensor Report";
+                }
+
+                if (clean.includes("Warning") || clean.includes("Warm")) {
+                    return "Alert Report";
+                }
+
+                return "Report";
+            }
+
+            function shortenMessage(message) {
+                if (!message || message.trim() === "") {
+                    return "No message content saved.";
+                }
+
+                let clean = message
+                        .replace(/\*/g, "")
+                        .replace(/_/g, "")
+                        .replace(/\n/g, " ")
+                        .replace(/\s+/g, " ")
+                        .trim();
+
+                let temp = clean.match(/Temp:\s*([0-9.]+°C)/i);
+                let humidity = clean.match(/Humidity:\s*([0-9.]+%)/i);
+                let motion = clean.match(/Motion:\s*([^🕒]+)/i);
+
+                let summaryParts = [];
+
+                if (temp) {
+                    summaryParts.push("Temp " + temp[1]);
+                }
+
+                if (humidity) {
+                    summaryParts.push("Humidity " + humidity[1]);
+                }
+
+                if (motion) {
+                    let motionText = motion[1].trim();
+
+                    if (motionText.length > 18) {
+                        motionText = motionText.substring(0, 18) + "...";
+                    }
+
+                    summaryParts.push("Motion " + motionText);
+                }
+
+                if (summaryParts.length > 0) {
+                    return summaryParts.join(" • ");
+                }
+
+                if (clean.includes("HiroSumi Status Report")) {
+                    return "Shelter status report was sent successfully.";
+                }
+
+                if (clean.length > 70) {
+                    clean = clean.substring(0, 70) + "...";
+                }
+
+                return clean;
+            }
+
+            function escapeHtml(value) {
+                if (!value) {
+                    return "";
+                }
+
+                return String(value)
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+            }
+
+            // --- 3. TELEGRAM SEND REPORT LOGIC ---
             function triggerTelegramReport() {
                 const headerBellIcon = document.getElementById('headerBellIcon');
 
@@ -442,15 +678,17 @@
                             return response.text();
                         })
                         .then(result => {
+                            console.log("Telegram result:", result);
+
                             if (result.trim() === 'success') {
                                 showModal("Report Sent!", "The latest sensor reading has been sent to your Telegram.", true);
                             } else {
-                                showModal("Failed", "Could not send report. Check connection or Bot Token.", false);
+                                showModal("Failed", "Could not send report. Check Telegram subscribers, Bot Token, or server output.", false);
                             }
                         })
                         .catch(err => {
                             console.error(err);
-                            showModal("System Error", "Something went wrong. Check browser console.", false);
+                            showModal("System Error", "Something went wrong. Check browser console and NetBeans output.", false);
                         })
                         .finally(() => {
                             if (headerBellIcon) {

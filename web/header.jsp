@@ -24,7 +24,7 @@
 
     <div class="header-greeting">
         <h1>
-            Good morning, <span><%= headerName %>!</span>
+            Good morning, <span><%= headerName%>!</span>
             <span class="paw-accent">🐾</span>
         </h1>
         <p>Thank you for caring for our little friends. 🌿</p>
@@ -35,12 +35,12 @@
         <div class="header-date-box">
             <i class="fa-regular fa-calendar-days"></i>
             <div>
-                <strong><%= currentDate %></strong>
-                <span><%= currentTime %></span>
+                <strong><%= currentDate%></strong>
+                <span><%= currentTime%></span>
             </div>
         </div>
 
-        <button class="header-bell-btn" id="headerBellBtn" onclick="triggerTelegramReport()" title="Send status to Telegram">
+        <button class="header-bell-btn" id="headerBellBtn" onclick="toggleNotificationPanel()" type="button" title="View notification history">
             <i class="fa-regular fa-bell" id="headerBellIcon"></i>
             <span class="bell-dot"></span>
         </button>

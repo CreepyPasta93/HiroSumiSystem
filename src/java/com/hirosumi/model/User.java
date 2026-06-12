@@ -8,6 +8,7 @@ public class User {
     private String role;
     private String email;
     private String profileImage;
+    private boolean mustChangePassword;
 
     public User() {
     }
@@ -67,5 +68,13 @@ public class User {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 }
