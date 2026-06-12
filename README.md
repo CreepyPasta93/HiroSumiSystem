@@ -92,7 +92,7 @@ This digital and physical solution provides:
 ---
 
 # 🗂️ Project Structure
-
+```text
 HiroSumiSystem/
 ├── Web Pages/
 │   ├── META-INF/
@@ -153,7 +153,7 @@ HiroSumiSystem/
 │           TelegramUpdateFetcher.java, ThingSpeakFetcher.java
 │
 └── README.md
-
+```
 ---
 
 # ✨ Main Features
