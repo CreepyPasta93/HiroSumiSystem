@@ -6,6 +6,7 @@ import com.hirosumi.dao.AnalyticsDAO;
 import com.hirosumi.dao.SystemLogDAO;
 import com.hirosumi.model.SensorData;
 import com.hirosumi.service.TelegramNotifier;
+import com.hirosumi.service.ThingSpeakFetcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -70,76 +71,104 @@ public class DashboardServlet extends HttpServlet {
         // 2. MANUAL REPORT (Bell Click)
         // ==========================================
         else if ("sendReport".equals(action)) {
+
+            /*
+     * Sync latest ThingSpeak reading before sending Telegram report.
+     * This only happens when user clicks Send Report, not on dashboard refresh.
+             */
+            try {
+                ThingSpeakFetcher fetcher = new ThingSpeakFetcher();
+                fetcher.fetchAndSaveData(getServletContext(), false);
+            } catch (Exception e) {
+                System.out.println("ThingSpeak sync before Telegram report failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+
             SensorData current = dao.getLatestReading();
             SystemLogDAO logDao = new SystemLogDAO();
             String msg;
             boolean success = false;
 
             if (current != null) {
-                // A. CALCULATE COMFORT STATUS
+
                 double t = current.getTemperature();
                 String statusEmoji = "🌡";
                 String statusText = "Stable";
+                String comfortNote = "HiroSumi is monitoring the shelter environment.";
 
                 if (t < 20.0) {
                     statusEmoji = "❄️";
-                    statusText = "Chilly (Heater Active)";
+                    statusText = "Chilly";
+                    comfortNote = "The shelter feels chilly. Heater support may help keep the cats warm.";
                 } else if (t >= 20.0 && t <= 25.0) {
                     statusEmoji = "🌿";
                     statusText = "Mild & Fresh";
+                    comfortNote = "The shelter looks fresh and comfortable for the cats.";
                 } else if (t > 25.0 && t < 29.0) {
                     statusEmoji = "💚";
-                    statusText = "Perfectly Cozy";
+                    statusText = "Cozy";
+                    comfortNote = "The shelter is in a cozy range for resting cats.";
+                } else if (t >= 29.0 && t <= 31.0) {
+                    statusEmoji = "🌤";
+                    statusText = "Warm";
+                    comfortNote = "The shelter is a little warm. Ventilation should stay active.";
                 } else {
                     statusEmoji = "🔥";
-                    statusText = "Warm";
+                    statusText = "Hot";
+                    comfortNote = "The shelter is hot. Please check airflow and cat comfort soon.";
                 }
 
-                // B. CALCULATE MOTION (From Session)
                 String motionText = "No recent activity";
                 int motion = current.getMotionStatus();
 
                 if (motion == 1) {
-                    motionText = "🏃 ACTIVE NOW!";
+                    motionText = "Active now";
                 } else {
                     Long lastSeen = (Long) request.getSession().getAttribute("lastMotionTime");
+
                     if (lastSeen != null) {
                         long diffMins = (System.currentTimeMillis() - lastSeen) / 60000;
                         motionText = (diffMins < 1) ? "Just now" : diffMins + " mins ago";
                     }
                 }
 
-                // C. FAN STATUS LOGIC 🆕
-                String fanText = (current.getFanStatus() == 1) ? "🔄 SPINNING" : "🛑 IDLE";
+                String fanText = (current.getFanStatus() == 1) ? "Spinning" : "Idle";
 
-                // D. SAFE TIME FORMATTING
                 String timeStr = "Unknown";
                 try {
                     timeStr = current.getTimestamp().toString().substring(0, 16);
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                // E. BUILD MESSAGE
-                msg = String.format("📢 *HiroSumi Status Report*\n"
-                        + "────────────────\n"
-                        + "%s *%s*\n"
-                        + "🌡 Temp: %.2f°C\n"
-                        + "💧 Humidity: %.2f%%\n"
-                        + "🐾 Motion: %s\n"
-                        + "🌀 Fan: %s\n" // 🆕 Added to Telegram
-                        + "────────────────\n"
-                        + "🕒 %s",
-                        statusEmoji, statusText,
+                msg = String.format("🌸 <b>HiroSumi Shelter Report</b>\n"
+                        + "━━━━━━━━━━━━━━━━\n"
+                        + "🐱 <b>Comfort Status:</b> %s %s\n"
+                        + "🌡 <b>Temperature:</b> %.2f°C\n"
+                        + "💧 <b>Humidity:</b> %.2f%%\n"
+                        + "🌬 <b>Pressure:</b> %.2f kPa\n"
+                        + "🐾 <b>Cat Activity:</b> %s\n"
+                        + "🌀 <b>Fan:</b> %s\n"
+                        + "━━━━━━━━━━━━━━━━\n"
+                        + "🕒 <b>Latest Reading:</b> %s\n"
+                        + "🍓 <i>%s</i>",
+                        statusEmoji,
+                        statusText,
                         current.getTemperature(),
                         current.getHumidity(),
+                        current.getPressure(),
                         motionText,
                         fanText,
-                        timeStr);
+                        timeStr,
+                        comfortNote);
 
                 success = TelegramNotifier.sendAlert(getServletContext(), msg);
 
             } else {
-                msg = "⚠️ *HiroSumi Alert*: System is offline.";
+                msg = "⚠️ <b>HiroSumi Alert</b>\n"
+                        + "━━━━━━━━━━━━━━━━\n"
+                        + "The system is currently offline or no sensor reading is available.";
+
                 success = TelegramNotifier.sendAlert(getServletContext(), msg);
             }
 

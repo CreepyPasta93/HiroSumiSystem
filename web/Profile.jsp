@@ -23,6 +23,8 @@
 
     String roleSuccess = request.getParameter("roleSuccess");
     String roleError = request.getParameter("roleError");
+    String telegramSaved = request.getParameter("telegramSaved");
+    String telegramError = request.getParameter("telegramError");
 %>
 
 <!DOCTYPE html>
@@ -34,6 +36,7 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/profile.css">
+        <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -316,6 +319,25 @@
 
                     <!-- TECHNICIAN ONLY: USER ROLE MANAGEMENT -->
                     <% if (isTechnician && userList != null) { %>
+
+                    <div class="telegram-sync-card">
+                        <div class="telegram-sync-copy">
+                            <h3>
+                                <i class="fa-brands fa-telegram"></i>
+                                Telegram Subscriber Sync
+                            </h3>
+                            <p>
+                                After a user presses <strong>/start</strong> on the HiroSumi Telegram bot,
+                                click this button to save their chat ID automatically.
+                            </p>
+                        </div>
+
+                        <a href="TelegramConnectServlet" class="telegram-sync-btn">
+                            <i class="fa-solid fa-rotate"></i>
+                            Sync Subscribers
+                        </a>
+                    </div>
+
                     <div class="role-management-card">
                         <div class="role-management-header">
                             <div>
@@ -445,6 +467,26 @@
                             });
                         });
             }
+
+            <% if (telegramSaved != null) {%>
+            Swal.fire({
+                icon: '<%= "0".equals(telegramSaved) ? "info" : "success"%>',
+                title: 'Telegram Sync Complete',
+                text: '<%= "0".equals(telegramSaved)
+            ? "No new Telegram subscribers were found. Ask the user to press /start, then sync again."
+            : telegramSaved + " new subscriber(s) saved successfully."%>',
+                confirmButtonColor: '#557159'
+            });
+            <% } %>
+
+            <% if ("unauthorized".equals(telegramError)) { %>
+            Swal.fire({
+                icon: 'error',
+                title: 'Access Denied',
+                text: 'Only technicians can sync Telegram subscribers.',
+                confirmButtonColor: '#d85c7d'
+            });
+            <% } %>
 
             <% if ("updated".equals(roleSuccess)) { %>
             Swal.fire({

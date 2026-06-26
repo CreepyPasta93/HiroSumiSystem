@@ -1,5 +1,6 @@
 package com.hirosumi.controller;
 
+import com.hirosumi.model.User;
 import com.hirosumi.service.TelegramUpdateFetcher;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -24,8 +25,23 @@ public class TelegramConnectServlet extends HttpServlet {
     private void process(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        if (currentUser.getRole() == null
+                || !currentUser.getRole().trim().equalsIgnoreCase("Technician")) {
+            response.sendRedirect("ProfileServlet?telegramError=unauthorized");
+            return;
+        }
+
         int savedCount = TelegramUpdateFetcher.fetchAndSaveSubscribers(getServletContext());
 
-        response.sendRedirect("dashboard.jsp?telegramSaved=" + savedCount);
+        response.sendRedirect("ProfileServlet?telegramSaved=" + savedCount);
     }
 }

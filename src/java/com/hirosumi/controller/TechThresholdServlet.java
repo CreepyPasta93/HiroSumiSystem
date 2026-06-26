@@ -39,7 +39,7 @@ public class TechThresholdServlet extends HttpServlet {
         int pendingCount = 0;
 
         try (Connection conn = DBConnection.getConnection()) {
-            String sql = "SELECT * FROM threshold_notifications WHERE status = 'PENDING'";
+            String sql = "SELECT * FROM threshold_notifications ORDER BY timestamp DESC";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -50,13 +50,14 @@ public class TechThresholdServlet extends HttpServlet {
                 n.setNewThreshold(rs.getFloat("new_threshold"));
                 n.setReason(rs.getString("reason"));
                 n.setUserId(rs.getInt("userId"));
+                n.setStatus(rs.getString("status"));
                 notifList.add(n);
                 pendingCount++;
             }
             // Pass the list and count to the tech_threshold.jsp
             request.setAttribute("notifications", notifList);
             request.setAttribute("pendingCount", pendingCount);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,6 +78,13 @@ public class TechThresholdServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String action = request.getParameter("action");
+
+        if ("reviewRequest".equals(action)) {
+            reviewThresholdRequest(request, response);
+            return;
+        }
+
         try {
             double hAct = Double.parseDouble(request.getParameter("heaterAct"));
             double hCut = Double.parseDouble(request.getParameter("heaterCut"));
@@ -89,7 +97,7 @@ public class TechThresholdServlet extends HttpServlet {
             // Get hidden values or provide defaults
             String lDurStr = request.getParameter("lightDur");
             int lDur = (lDurStr != null) ? Integer.parseInt(lDurStr) : 10;
-            
+
             String sAlertStr = request.getParameter("safetyAlert");
             double sAlert = (sAlertStr != null) ? Double.parseDouble(sAlertStr) : 32.0;
 
@@ -108,6 +116,106 @@ public class TechThresholdServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("TechThresholdServlet?status=error");
+        }
+    }
+
+    private void reviewThresholdRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession(false);
+        User currentUser = null;
+
+        if (session != null) {
+            currentUser = (User) session.getAttribute("currentUser");
+        }
+
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        if (currentUser.getRole() == null
+                || !currentUser.getRole().equalsIgnoreCase("Technician")) {
+            response.sendRedirect("TechThresholdServlet?status=unauthorized");
+            return;
+        }
+
+        String requestIdStr = request.getParameter("requestId");
+        String decision = request.getParameter("decision");
+
+        if (decision == null || decision.trim().isEmpty()) {
+            decision = "PENDING";
+        }
+
+        decision = decision.trim().toUpperCase();
+
+        if (!decision.equals("PENDING")
+                && !decision.equals("APPROVED")
+                && !decision.equals("DENIED")) {
+            response.sendRedirect("TechThresholdServlet?status=invalid");
+            return;
+        }
+
+        try {
+            int requestId = Integer.parseInt(requestIdStr);
+
+            String sql = "UPDATE threshold_notifications "
+                    + "SET status = ? "
+                    + "WHERE requestId = ?";
+
+            try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setString(1, decision);
+                ps.setInt(2, requestId);
+
+                int rows = ps.executeUpdate();
+
+                SystemLogDAO logDao = new SystemLogDAO();
+
+                if (rows > 0) {
+                    logDao.insertLog("Technician Panel", "CONFIG",
+                            "Threshold request #" + requestId + " marked as " + decision,
+                            "Success");
+
+                    saveDashboardNotification(
+                            currentUser.getUserId(),
+                            "Threshold request #" + requestId + " was marked as " + decision + " by technician."
+                    );
+
+                    response.sendRedirect("TechThresholdServlet?status=reviewed");
+                } else {
+                    logDao.insertLog("Technician Panel", "ERROR",
+                            "Failed to update threshold request #" + requestId,
+                            "Failed");
+
+                    response.sendRedirect("TechThresholdServlet?status=error");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("TechThresholdServlet?status=error");
+        }
+    }
+
+    private void saveDashboardNotification(Integer userId, String message) {
+        String sql = "INSERT INTO notification_log "
+                + "(userId, messageContent, platform, status) "
+                + "VALUES (?, ?, 'Threshold', 'SENT')";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (userId == null) {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(1, userId);
+            }
+
+            ps.setString(2, message);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

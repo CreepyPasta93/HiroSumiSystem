@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
         <title>Super Debugger Fixed</title>
         <style>
             body { font-family: monospace; padding: 20px; background: #f4f4f4; }

@@ -45,6 +45,7 @@
         <!-- Global project styles -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
+        <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
 
         <!-- Page-specific styles -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/threshold.css">

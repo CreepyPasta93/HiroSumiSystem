@@ -2091,15 +2091,164 @@ html, body {
         letter-spacing: 1px;
     }
 
-    /* Data Sync */
-    .sync-time,
-    .sync-next-time {
-        font-size: 1.25rem;
-    }
-
     /* Modal */
     .modal-content {
         width: calc(100% - 36px);
         padding: 24px 18px;
+    }
+}
+
+/* ========================================= */
+/* DATA SYNC RESPONSIVE SIZE BOOST           */
+/* Bigger, clearer values for mobile/tablet  */
+/* ========================================= */
+
+/* Tablet */
+@media (max-width: 900px) {
+    .dashboard-container .data-sync-card {
+        min-height: 260px !important;
+        padding: 26px 28px !important;
+    }
+
+    .dashboard-container .data-sync-title {
+        font-size: 1.45rem !important;
+        line-height: 1.1 !important;
+        font-weight: 900 !important;
+    }
+
+    .dashboard-container .data-sync-pill {
+        font-size: 0.82rem !important;
+        padding: 9px 14px !important;
+    }
+
+    .dashboard-container .data-sync-body {
+        margin-top: 70px !important;
+    }
+
+    .dashboard-container .sync-label {
+        font-size: 0.82rem !important;
+        letter-spacing: 1.7px !important;
+        font-weight: 900 !important;
+        margin-bottom: 10px !important;
+    }
+
+    .dashboard-container .sync-time {
+        font-size: 2.55rem !important;
+        line-height: 1 !important;
+        font-weight: 900 !important;
+        color: #3E2723 !important;
+        font-family: Georgia, serif !important;
+    }
+
+    .dashboard-container .sync-time span {
+        font-size: 1.05rem !important;
+        font-weight: 900 !important;
+        color: #8d7f79 !important;
+        margin-left: 8px !important;
+        font-family: 'Quicksand', sans-serif !important;
+    }
+
+    .dashboard-container .sync-next-time {
+        font-size: 2.75rem !important;
+        line-height: 1 !important;
+        font-weight: 900 !important;
+        color: #557159 !important;
+        font-family: Georgia, serif !important;
+    }
+
+    .dashboard-container .sync-rotate-icon {
+        font-size: 1.45rem !important;
+        color: #557159 !important;
+        margin-left: auto !important;
+        margin-right: 62px !important;
+    }
+
+    .dashboard-container .data-sync-cat {
+        width: 58px !important;
+        right: 22px !important;
+        bottom: 22px !important;
+    }
+}
+
+/* Phone */
+@media (max-width: 520px) {
+    .dashboard-container .data-sync-card {
+        min-height: 258px !important;
+        padding: 24px 26px !important;
+    }
+
+    .dashboard-container .data-sync-title {
+        font-size: 1.42rem !important;
+    }
+
+    .dashboard-container .data-sync-body {
+        margin-top: 64px !important;
+    }
+
+    .dashboard-container .sync-label {
+        font-size: 0.8rem !important;
+        margin-bottom: 9px !important;
+    }
+
+    .dashboard-container .sync-time {
+        font-size: 2.45rem !important;
+    }
+
+    .dashboard-container .sync-time span {
+        font-size: 1rem !important;
+        margin-left: 8px !important;
+    }
+
+    .dashboard-container .sync-next-time {
+        font-size: 2.65rem !important;
+    }
+
+    .dashboard-container .sync-rotate-icon {
+        font-size: 1.38rem !important;
+        margin-right: 62px !important;
+    }
+
+    .dashboard-container .data-sync-cat {
+        width: 56px !important;
+        right: 20px !important;
+        bottom: 20px !important;
+    }
+}
+
+/* iPhone SE */
+@media (max-width: 390px) {
+    .dashboard-container .data-sync-card {
+        min-height: 248px !important;
+        padding: 22px 24px !important;
+    }
+
+    .dashboard-container .data-sync-title {
+        font-size: 1.32rem !important;
+    }
+
+    .dashboard-container .data-sync-body {
+        margin-top: 58px !important;
+    }
+
+    .dashboard-container .sync-time {
+        font-size: 2.25rem !important;
+    }
+
+    .dashboard-container .sync-time span {
+        font-size: 0.9rem !important;
+        margin-left: 6px !important;
+    }
+
+    .dashboard-container .sync-next-time {
+        font-size: 2.4rem !important;
+    }
+
+    .dashboard-container .sync-rotate-icon {
+        font-size: 1.25rem !important;
+        margin-right: 56px !important;
+    }
+
+    .dashboard-container .data-sync-cat {
+        width: 50px !important;
     }
 }

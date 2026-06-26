@@ -107,6 +107,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-custom.css">
+        <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -400,7 +401,7 @@
                                         <%= (d != null && d.getTimestamp() != null)
                                                 ? d.getTimestamp().toString().substring(11, 16)
                                                 : "<span style='font-size:1rem; color:#d85c7d;'>No Data</span>"%>
-                                        <span>Today</span>
+                                        <span class="sync-today">Today</span>
                                     </div>
                                 </div>
 

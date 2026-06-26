@@ -27,6 +27,7 @@ public class TelegramNotifier {
             }
 
             prop.load(input);
+
             String token = prop.getProperty("TELEGRAM_BOT_TOKEN");
 
             if (token == null || token.trim().isEmpty()) {
@@ -50,16 +51,26 @@ public class TelegramNotifier {
             return false;
         }
 
+        if (chatId == null || chatId.trim().isEmpty()) {
+            System.err.println("❌ Telegram chatId is empty. Message not sent.");
+            return false;
+        }
+
         try {
             String encodedMessage = URLEncoder.encode(message, "UTF-8");
 
             String urlString = "https://api.telegram.org/bot" + botToken
-                    + "/sendMessage?chat_id=" + chatId
-                    + "&text=" + encodedMessage;
+                    + "/sendMessage?chat_id=" + chatId.trim()
+                    + "&text=" + encodedMessage
+                    + "&parse_mode=HTML"
+                    + "&disable_web_page_preview=true";
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
             conn.setRequestMethod("GET");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
 
             int responseCode = conn.getResponseCode();
             System.out.println("Telegram Response for " + chatId + ": " + responseCode);
@@ -96,7 +107,7 @@ public class TelegramNotifier {
         TelegramSubscriberDAO dao = new TelegramSubscriberDAO();
         List<String> chatIds = dao.getActiveChatIds();
 
-        if (chatIds.isEmpty()) {
+        if (chatIds == null || chatIds.isEmpty()) {
             System.out.println("⚠ No Telegram subscribers found.");
             saveNotificationLog(null, message, "FAILED");
             return false;

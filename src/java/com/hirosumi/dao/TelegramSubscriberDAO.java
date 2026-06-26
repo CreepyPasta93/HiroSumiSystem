@@ -6,10 +6,14 @@ import java.util.List;
 
 public class TelegramSubscriberDAO {
 
-    public void saveSubscriber(String chatId, String username, String firstName) {
-        String sql = "INSERT IGNORE INTO telegram_subscribers "
-                   + "(chatId, username, firstName, status) "
-                   + "VALUES (?, ?, ?, 'ACTIVE')";
+    public boolean saveSubscriber(String chatId, String username, String firstName) {
+        String sql = "INSERT INTO telegram_subscribers "
+                + "(chatId, username, firstName, status) "
+                + "VALUES (?, ?, ?, 'ACTIVE') "
+                + "ON DUPLICATE KEY UPDATE "
+                + "username = VALUES(username), "
+                + "firstName = VALUES(firstName), "
+                + "status = 'ACTIVE'";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -17,12 +21,16 @@ public class TelegramSubscriberDAO {
             ps.setString(1, chatId);
             ps.setString(2, username);
             ps.setString(3, firstName);
-            ps.executeUpdate();
 
-            System.out.println("✅ Saved Telegram subscriber: " + chatId);
+            int rows = ps.executeUpdate();
+
+            System.out.println("✅ Telegram subscriber saved/updated: " + chatId + ", rows=" + rows);
+
+            return rows > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -65,13 +73,17 @@ public class TelegramSubscriberDAO {
     }
 
     public void updateLastUpdateId(long lastUpdateId) {
-        String sql = "UPDATE telegram_bot_state SET lastUpdateId = ? WHERE id = 1";
+        String sql = "INSERT INTO telegram_bot_state (id, lastUpdateId) "
+                + "VALUES (1, ?) "
+                + "ON DUPLICATE KEY UPDATE lastUpdateId = VALUES(lastUpdateId)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, lastUpdateId);
             ps.executeUpdate();
+
+            System.out.println("✅ Updated Telegram lastUpdateId: " + lastUpdateId);
 
         } catch (Exception e) {
             e.printStackTrace();

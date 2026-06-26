@@ -1,1 +1,20 @@
-config.properties 
+# Secret/config files
+config.properties
+**/config.properties
+.env
+*.env
+
+# NetBeans generated files
+/build/
+/dist/
+/nbproject/private/
+.netbeans_automatic_build
+.netbeans_update_resources
+
+# Java compiled files
+*.class
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/

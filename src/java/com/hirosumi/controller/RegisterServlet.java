@@ -81,7 +81,7 @@ public class RegisterServlet extends HttpServlet {
 
                 System.out.println("REGISTER SUCCESS: Account created for " + email);
                 System.out.println("CALLING EMAIL SERVICE NOW...");
-                EmailService.sendVerificationEmail(email, fullName, token, appUrl);
+                EmailService.sendVerificationEmail(email, fullName, token, appUrl, getServletContext());
 
                 request.setAttribute("successMessage", "Registration successful! Please check your email to verify your account before logging in.");
                 request.getRequestDispatcher("signup.jsp").forward(request, response);
