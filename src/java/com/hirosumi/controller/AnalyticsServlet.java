@@ -163,6 +163,18 @@ public class AnalyticsServlet extends HttpServlet {
             return;
         }
 
+        // Only technician can delete or prune sensor data
+        String userRole = currentUser.getRole();
+
+        boolean isTechnician = userRole != null
+                && (userRole.equalsIgnoreCase("Technician")
+                || userRole.equalsIgnoreCase("System Technician"));
+
+        if (!isTechnician) {
+            response.sendRedirect("AnalyticsServlet?error=unauthorized");
+            return;
+        }
+
         String action = request.getParameter("action");
         AnalyticsDAO dao = new AnalyticsDAO();
 
@@ -171,14 +183,6 @@ public class AnalyticsServlet extends HttpServlet {
             dao.deleteReading(id);
 
         } else if ("prune".equals(action)) {
-
-            String userRole = currentUser.getRole();
-
-            if (userRole == null || !userRole.equalsIgnoreCase("Technician")) {
-                response.sendRedirect("AnalyticsServlet?error=unauthorized");
-                return;
-            }
-
             dao.deleteOldestReadings(10);
         }
 

@@ -43,7 +43,7 @@ public class LoginServlet extends HttpServlet {
             }
 
         } else {
-            request.setAttribute("errorMessage", "Invalid Credentials or Role Selection");
+            request.setAttribute("errorMessage", "Oops! Please check your role, username, or password.");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }

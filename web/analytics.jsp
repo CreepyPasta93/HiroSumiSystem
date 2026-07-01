@@ -344,7 +344,9 @@
                                         <th>Temp (°C)</th>
                                         <th>Hum (%)</th>
                                         <th>Pres (kPa)</th>
+                                            <% if (isTechnician) { %>
                                         <th>Actions</th>
+                                            <% } %>
                                     </tr>
                                 </thead>
 
@@ -358,6 +360,7 @@
                                         <td><strong><%= String.format("%.2f", s.getTemperature())%></strong></td>
                                         <td><%= String.format("%.2f", s.getHumidity())%></td>
                                         <td><%= String.format("%.2f", s.getPressure())%></td>
+                                        <% if (isTechnician) {%>
                                         <td>
                                             <button 
                                                 type="button" 
@@ -367,13 +370,14 @@
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </td>
+                                        <% } %>
                                     </tr>
                                     <%
                                         }
                                     } else {
                                     %>
                                     <tr>
-                                        <td colspan="5" style="text-align:center; padding:30px; color:#999;">
+                                        <td colspan="<%= isTechnician ? 5 : 4%>" style="text-align:center; padding:30px; color:#999;">
                                             No data found.
                                         </td>
                                     </tr>

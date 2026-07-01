@@ -335,7 +335,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     align-items: center;
     padding: 0 28px 12px 78px;
     position: relative;
-    z-index: 2;
+    z-index: 50;
 }
 
 .dashboard-header::after {
@@ -378,6 +378,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     display: flex;
     align-items: center;
     gap: 14px;
+    position: relative;
+    z-index: 80;
 }
 
 .header-date-box {
@@ -457,6 +459,107 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 .header-send-btn:hover {
     background: #456247;
     transform: translateY(-2px);
+}
+
+/* ============================= */
+/* TELEGRAM SETUP CUTE POPUP     */
+/* ============================= */
+
+.telegram-help-wrap {
+    position: relative;
+    display: inline-flex;
+    z-index: 100;
+}
+
+.telegram-help-tooltip {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 280px;
+    padding: 16px 17px;
+
+    background:
+        radial-gradient(circle at top left, rgba(255, 198, 213, 0.45), transparent 38%),
+        #fffaf4;
+
+    border: 2px solid #f8bbd0;
+    border-radius: 22px;
+    box-shadow: 0 16px 32px rgba(62, 39, 35, 0.18);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.96);
+    transition: 0.25s ease;
+
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.telegram-help-tooltip::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: 28px;
+
+    width: 14px;
+    height: 14px;
+
+    background: #fffaf4;
+    border-left: 2px solid #f8bbd0;
+    border-top: 2px solid #f8bbd0;
+    transform: rotate(45deg);
+}
+
+.telegram-help-wrap:hover .telegram-help-tooltip,
+.telegram-help-wrap:focus-within .telegram-help-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.telegram-help-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+    color: #d85c7d;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 900;
+}
+
+.telegram-help-title i {
+    color: #557159;
+    font-size: 1.05rem;
+}
+
+.telegram-help-tooltip p {
+    margin: 0;
+    color: #6b5046;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    font-weight: 700;
+}
+
+.telegram-help-tooltip strong {
+    color: #557159;
+    font-weight: 900;
+}
+
+.telegram-bot-link {
+    color: #557159;
+    text-decoration: none;
+    border-bottom: 2px dotted #d85c7d;
+    cursor: pointer;
+}
+
+.telegram-bot-link:hover {
+    color: #d85c7d;
+    border-bottom-color: #557159;
 }
 
 /* ============================= */

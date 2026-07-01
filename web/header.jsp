@@ -7,6 +7,14 @@
     User headerUser = (User) session.getAttribute("currentUser");
 
     String headerName = "User";
+    int currentHour = new Date().getHours();
+    String greetingText = "Good morning";
+
+    if (currentHour >= 12 && currentHour < 18) {
+        greetingText = "Good afternoon";
+    } else if (currentHour >= 18) {
+        greetingText = "Good evening";
+    }
 
     if (headerUser != null) {
         if (headerUser.getFullName() != null && !headerUser.getFullName().trim().isEmpty()) {
@@ -24,7 +32,7 @@
 
     <div class="header-greeting">
         <h1>
-            Good morning, <span><%= headerName%>!</span>
+            <%= greetingText%>, <span><%= headerName%>!</span>
             <span class="paw-accent">🐾</span>
         </h1>
         <p>Thank you for caring for our little friends. 🌿</p>
@@ -45,10 +53,37 @@
             <span class="bell-dot"></span>
         </button>
 
-        <button class="header-send-btn" id="headerSendBtn" onclick="triggerHeaderTelegramReport()" type="button">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>Send Report</span>
-        </button>
+        <div class="telegram-help-wrap">
+            <button 
+                class="header-send-btn" 
+                id="headerSendBtn" 
+                onclick="triggerHeaderTelegramReport()" 
+                type="button"
+                title="Search @HiroSumiAlert_bot on Telegram and press Start first.">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Send Report</span>
+            </button>
+
+            <div class="telegram-help-tooltip">
+                <div class="telegram-help-title">
+                    <i class="fa-brands fa-telegram"></i>
+                    Telegram setup
+                </div>
+
+                <p>
+                    To receive HiroSumi reports, open 
+                    <a 
+                        href="https://t.me/HirosumiAlert_bot" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="telegram-bot-link">
+                        <strong>@HirosumiAlert_bot</strong>
+                    </a>
+                    on Telegram and press 
+                    <strong>Start</strong> first.
+                </p>
+            </div>
+        </div>
 
     </div>
 </header>
@@ -100,7 +135,7 @@
 
 <script>
     const HIROSUMI_CONTEXT_PATH = '<%= request.getContextPath()%>';
-    
+
     function triggerHeaderTelegramReport() {
         const sendBtn = document.getElementById('headerSendBtn');
         const bellIcon = document.getElementById('headerBellIcon');
